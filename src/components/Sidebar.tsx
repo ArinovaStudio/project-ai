@@ -7,7 +7,8 @@ import {
   SidebarFooter,
   SidebarMenu,
   SidebarMenuItem,
-  SidebarMenuButton
+  SidebarMenuButton,
+  useSidebar
 } from "@/components/ui/sidebar"
 
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -18,8 +19,13 @@ import {
   Crown,
   MessageSquare,
   LogOut,
+  PanelLeft,
 } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import Link from "next/link"
+import { useState } from "react"
+import type { MouseEventHandler } from "react"
+import { ThemeToggle } from "./theme-toggle"
 
 interface ChatItem {
   id: number
@@ -33,32 +39,72 @@ interface SidebarProps {
   onSelectChat: (id: number) => void
 }
 
+type PanelIconProps = {
+  className?: string
+  onClick: MouseEventHandler<HTMLButtonElement>
+}
+
+export function PanelIcon({ className, onClick }: PanelIconProps) {
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={onClick}
+      className={`h-8 w-8 cursor-pointer ${className ?? ""}`}
+    >
+      <PanelLeft size={18} />
+    </Button>
+  )
+}
+
 export function AppSidebar({
   chatHistory,
   selectedChat,
   onSelectChat,
 }: SidebarProps) {
 
+  const { toggleSidebar, state } = useSidebar()
+  const [isHovered, setIsHovered] = useState(false)
+
+  const showIcon = state === "collapsed" && isHovered
+
   return (
     <Sidebar collapsible="icon" className="bg-background group">
-      <SidebarHeader className="space-y-4 px-4">
-        <div className="flex items-center gap-2">
-          <div
-            className="w-8 h-8 cursor-pointer bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center"
-          >
-            <span className="text-white font-bold text-sm">A</span>
+      <SidebarHeader className="space-y-4 px">
+        <div
+          className="flex items-center gap-2"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          {/* LOGO / ICON SLOT */}
+          <div className="w-8 h-8 flex items-center justify-center">
+            {showIcon ? (
+              <PanelIcon onClick={toggleSidebar} />
+            ) : (
+              <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center cursor-pointer">
+                <span className="text-white font-bold text-sm">A</span>
+              </div>
+            )}
           </div>
 
-          <h1 className="text-lg font-bold group-data-[state=collapsed]:hidden">
-            Arinova Studio
-          </h1>
+          {/* TITLE (expanded only) */}
+          {state === "expanded" && (
+            <h1 className="text-lg font-bold">Arinova Studio</h1>
+          )}
+
+          {/* PANEL ICON (expanded view) */}
+          {state === "expanded" && (
+            <PanelIcon className="ml-auto" onClick={toggleSidebar} />
+          )}
         </div>
 
-        <Button onClick={() => onSelectChat(0)} className="w-full gap-2 cursor-pointer">
+        {/* NEW CHAT */}
+        <Button
+          onClick={() => onSelectChat(0)}
+          className="w-full gap-2 cursor-pointer"
+        >
           <Plus size={18} />
-          <span className="group-data-[state=collapsed]:hidden">
-            New Chat
-          </span>
+          {state === "expanded" && <span>New Chat</span>}
         </Button>
       </SidebarHeader>
 
@@ -68,18 +114,22 @@ export function AppSidebar({
             <SidebarMenuItem>
               <SidebarMenuButton className="cursor-pointer">
                 <Settings size={16} />
-                <span className="group-data-[state=collapsed]:hidden">
-                  Personalization
-                </span>
+                <Link href="/personalization">
+                  <span className="group-data-[state=collapsed]:hidden">
+                    Personalization
+                  </span>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
 
             <SidebarMenuItem>
               <SidebarMenuButton className="cursor-pointer">
                 <Crown size={16} />
-                <span className="group-data-[state=collapsed]:hidden">
-                  Upgrade to Pro
-                </span>
+                <Link href="/subscriptions">
+                  <span className="group-data-[state=collapsed]:hidden">
+                    Upgrade to Pro
+                  </span>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -112,7 +162,7 @@ export function AppSidebar({
         </ScrollArea>
       </SidebarContent>
 
-      <SidebarFooter className="px-4 py-3 group">
+      <SidebarFooter className="px py-3 group">
         <div className="flex items-center gap-23">
           <div className="flex gap-2">
             <Avatar className="h-9 w-9">
@@ -126,9 +176,12 @@ export function AppSidebar({
             </div>
           </div>
 
-          <SidebarMenuButton className="cursor-pointer">
+          {/* <SidebarMenuButton className="cursor-pointer group-data-[state=collapsed]:hidden">
             <LogOut size={16} />
-          </SidebarMenuButton>
+          </SidebarMenuButton> */}
+          <div className="cursor-pointer group-data-[state=collapsed]:hidden">
+            <ThemeToggle />
+          </div>
         </div>
       </SidebarFooter>
     </Sidebar>

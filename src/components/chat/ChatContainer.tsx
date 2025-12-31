@@ -4,9 +4,9 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Send, PanelLeft } from "lucide-react"
+import { Send } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { useSidebar } from "../ui/sidebar"
+import InputArea from "../InputArea"
 
 interface Message {
     id: number
@@ -20,7 +20,6 @@ interface ChatContainerProps {
 }
 
 export function ChatContainer({ selectedChat }: ChatContainerProps) {
-    const { toggleSidebar } = useSidebar()
 
     const [messages, setMessages] = useState<Message[]>([
         {
@@ -34,20 +33,13 @@ export function ChatContainer({ selectedChat }: ChatContainerProps) {
     return (
         <div className="flex-1 flex flex-col bg-background max-w-8xl">
             {/* Chat Header */}
-            <div className="border-b border-border px-6 py-4 flex gap-3">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={toggleSidebar}
-                    className="h-9 w-9"
-                >
-                    <PanelLeft size={18} />
-                </Button>
+            {/* <div className="border-b border-border px-6 py-4 flex gap-3">
+                
                 <div>
                     <h2 className="text-xl font-bold text-foreground">Chat Session</h2>
                     <p className="text-sm text-muted-foreground">AI Assistant</p>
                 </div>
-            </div>
+            </div> */}
 
             {/* Messages Container */}
             <ScrollArea className="flex-1 px-6 py-6">
@@ -98,19 +90,7 @@ export function ChatContainer({ selectedChat }: ChatContainerProps) {
             </ScrollArea>
 
             {/* Input Area */}
-            <div className="border-t border-border px-6 py-4 bg-background">
-                <div className="max-w-4xl mx-auto flex gap-3">
-                    <Input
-                        placeholder="Type your message here..."
-                        className="flex-1 bg-card border-border"
-                    />
-                    <Button
-                        size="icon"
-                        className="bg-primary text-primary-foreground hover:bg-primary/90"
-                    ><Send size={20} />
-                    </Button>
-                </div>
-            </div>
+            <InputArea/>
         </div>
     )
 }
