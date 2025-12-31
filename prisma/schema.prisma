@@ -94,6 +94,8 @@ model Subscription {
 
 model Collaboration {
   id          String   @id @default(cuid())
+  userId      String
+  userEmail   String
   title       String
   description String?
   budget      Float

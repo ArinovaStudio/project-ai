@@ -1,76 +1,71 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from "@/lib/prisma";
-import { auth } from "@/lib/auth";
 
 export async function GET() {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-console.log("session", session.user.id);
-console.log("session Details", session);
-
-
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    include: {
-      histories: {
-        orderBy: { createdAt: "desc" },
-        take: 10,
+  try {
+    const users = await prisma.user.findMany({
+      orderBy: {
+        createdAt: "desc", // latest users first
       },
-      subscription: true,
-    },
-  });
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        role: true,
+        subscriptionTag: true,
+        createdAt: true,
+      },
+    });
 
-  if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+    return NextResponse.json(
+      { users },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    // console.error("Error fetching users:", error);
+
+    return NextResponse.json(
+      { error: "Failed to fetch users" },
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json({ user });
 }
 
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get('user');
 
-// export async function PUT(req: Request) {
-//   try {
-//     const cookieStore = await cookies();
-//     const token = cookieStore.get('token')?.value;
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
 
-//     if (!token) {
-//       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-//     }
+    const deletedUser = await prisma.user.delete({
+      where: {
+        id: userId,
+      },
+    });
 
-//     let payload;
-//     try {
-//       payload = verifyToken(token) as any;
-//     } catch {
-//       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-//     }
+    return NextResponse.json(
+      {
+        message: "User deleted successfully",
+        userId: deletedUser.id,
+        name: deletedUser.name,
+      },
+      { status: 200 }
+    );
 
-//     const { name, phone, bio, department, workingAs, dob } = await req.json();
+  } catch (error) {
+    // console.error("Error deleting user:", error);
 
-//     const updatedUser = await prisma.user.update({
-//       where: { id: payload.userId || payload.id },
-//       data: { name, phone, bio, department, workingAs, dob },
-//       select: {
-//         id: true,
-//         name: true,
-//         email: true,
-//         role: true,
-//         employeeId: true,
-//         department: true,
-//         phone: true,
-//         bio: true,
-//         image: true,
-//         dob: true,
-//         workingAs: true,
-//         createdAt: true,
-//         updatedAt: true,
-//       },
-//     });
-
-//     return NextResponse.json({ user: updatedUser });
-//   } catch (error) {
-//     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-//   }
-// }
+    return NextResponse.json(
+      { error: "Failed to delete user" },
+      { status: 500 }
+    );
+  }
+}
