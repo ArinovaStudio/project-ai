@@ -18,7 +18,7 @@ import {
   Settings,
   Crown,
   MessageSquare,
-  LogOut,
+  // LogOut,
   PanelLeft,
 } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -26,18 +26,20 @@ import Link from "next/link"
 import { useState } from "react"
 import type { MouseEventHandler } from "react"
 import { ThemeToggle } from "./theme-toggle"
+import { useChat } from "@/context/chat-provider"
+import { useRouter } from "next/navigation"
 
-interface ChatItem {
-  id: number
-  title: string
-  date: string
-}
+// interface ChatItem {
+//   id: number
+//   title: string
+//   date: string
+// }
 
-interface SidebarProps {
-  chatHistory: ChatItem[]
-  selectedChat: number | null
-  onSelectChat: (id: number) => void
-}
+// interface SidebarProps {
+//   chatHistory: ChatItem[]
+//   selectedChat: number | null
+//   onSelectChat: (id: number) => void
+// }
 
 type PanelIconProps = {
   className?: string
@@ -57,16 +59,25 @@ export function PanelIcon({ className, onClick }: PanelIconProps) {
   )
 }
 
-export function AppSidebar({
-  chatHistory,
-  selectedChat,
-  onSelectChat,
-}: SidebarProps) {
+export function AppSidebar() {
 
+  const router = useRouter()
   const { toggleSidebar, state } = useSidebar()
-  const [isHovered, setIsHovered] = useState(false)
+  const { chats, selectedChatId, selectChat } = useChat()
 
+  const [isHovered, setIsHovered] = useState(false)
   const showIcon = state === "collapsed" && isHovered
+
+  const chatHistory = chats.map((chat) => ({
+    id: chat.id,
+    title: chat.title,
+    date: chat.date,
+  }))
+
+  const handleSelectChat = (id: number) => {
+    selectChat(id)
+    router.push(`/chat/${id}`)
+  }
 
   return (
     <Sidebar collapsible="icon" className="bg-background group">
@@ -100,7 +111,7 @@ export function AppSidebar({
 
         {/* NEW CHAT */}
         <Button
-          onClick={() => onSelectChat(0)}
+          onClick={() => { router.push("/"); selectChat(0) }}
           className="w-full gap-2 cursor-pointer"
         >
           <Plus size={18} />
@@ -142,8 +153,8 @@ export function AppSidebar({
             {chatHistory.map((chat) => (
               <SidebarMenuItem key={chat.id}>
                 <SidebarMenuButton
-                  isActive={selectedChat === chat.id}
-                  onClick={() => onSelectChat(chat.id)}
+                  isActive={selectedChatId === chat.id}
+                  onClick={() => handleSelectChat(chat.id)}
                   className="py-6 cursor-pointer"
                 >
                   <MessageSquare size={14} />

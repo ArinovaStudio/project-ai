@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/context/theme-provider";
+import { ChatProvider } from "@/context/chat-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,11 +30,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          <div className="flex h-screen">
-            <main className="flex-1 overflow-auto">
-              {children}
-            </main>
-          </div>
+          <ChatProvider>
+            <div className="flex h-screen">
+              <main className="flex-1 overflow-auto">
+                {children}
+              </main>
+            </div>
+          </ChatProvider>
         </ThemeProvider>
       </body>
     </html>
