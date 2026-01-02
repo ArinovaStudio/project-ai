@@ -1,10 +1,14 @@
-import { ChatContainer } from '@/components/chat/ChatContainer'
-import React from 'react'
+"use client";
 
-export default function page() {
-    return (
-        <div className="flex h-screen bg-background w-full">
-            <ChatContainer />
-        </div>
-    )
+import { use } from "react";
+import { ChatContainer } from "@/components/chat/ChatContainer";
+
+export default function ChatPage({
+    params,
+}: {
+    params: Promise<{ id: string }>;
+}) {
+    const { id } = use(params);
+
+    return <ChatContainer historyId={id} />;
 }

@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/context/theme-provider";
 import { ChatProvider } from "@/context/chat-provider";
+import { AuthProvider } from "@/context/auth-provider";
+import { SessionProvider } from "next-auth/react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,15 +31,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider>
-          <ChatProvider>
-            <div className="flex h-screen">
-              <main className="flex-1 overflow-auto">
-                {children}
-              </main>
-            </div>
-          </ChatProvider>
-        </ThemeProvider>
+        <SessionProvider><AuthProvider>
+          <ThemeProvider>
+            <ChatProvider>
+              <div className="flex h-screen">
+                <main className="flex-1 overflow-auto">
+                  {children}
+                </main>
+              </div>
+            </ChatProvider>
+          </ThemeProvider>
+        </AuthProvider></SessionProvider>
       </body>
     </html>
   );

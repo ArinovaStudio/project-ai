@@ -8,8 +8,8 @@ export async function GET() {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-console.log("session", session.user.id);
-console.log("session Details", session);
+  console.log("session", session.user.id);
+  console.log("session Details", session);
 
 
   const user = await prisma.user.findUnique({
@@ -31,34 +31,34 @@ console.log("session Details", session);
 }
 
 export async function PUT(req: Request) {
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get('user');
+  const { searchParams } = new URL(req.url);
+  const userId = searchParams.get('user');
 
-    if (!userId) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-    const { name , role} = await req.json();
+  const { name, role } = await req.json();
 
-    try {
-        const updatedUser = await prisma.user.update({
-            where: { id: userId },
-            data: { name, role },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                role: true,
-                subscription: true,
-                subscriptionTag: true,
-            },
-        });
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { name, role },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        subscription: true,
+        subscriptionTag: true,
+      },
+    });
 
-        return NextResponse.json({ user: updatedUser });
-    } catch (error) {
-        // console.error("Error updating user:", error);
-        return NextResponse.json({ error: "Failed to update user" }, { status: 500 });
-    }
+    return NextResponse.json({ user: updatedUser });
+  } catch (error) {
+    // console.error("Error updating user:", error);
+    return NextResponse.json({ error: "Failed to update user" }, { status: 500 });
+  }
 }
 
 export async function DELETE() {

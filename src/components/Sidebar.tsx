@@ -10,6 +10,13 @@ import {
   SidebarMenuButton,
   useSidebar
 } from "@/components/ui/sidebar"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
@@ -18,7 +25,7 @@ import {
   Settings,
   Crown,
   MessageSquare,
-  // LogOut,
+  LogOut, User,
   PanelLeft,
 } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -28,6 +35,7 @@ import type { MouseEventHandler } from "react"
 import { ThemeToggle } from "./theme-toggle"
 import { useChat } from "@/context/chat-provider"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/context/auth-provider"
 
 // interface ChatItem {
 //   id: number
@@ -60,10 +68,11 @@ export function PanelIcon({ className, onClick }: PanelIconProps) {
 }
 
 export function AppSidebar() {
-
   const router = useRouter()
   const { toggleSidebar, state } = useSidebar()
   const { chats, selectedChatId, selectChat } = useChat()
+  const { user, logout } = useAuth()
+  // console.log("user = ", user)
 
   const [isHovered, setIsHovered] = useState(false)
   const showIcon = state === "collapsed" && isHovered
@@ -74,10 +83,15 @@ export function AppSidebar() {
     date: chat.date,
   }))
 
-  const handleSelectChat = (id: number) => {
+  const handleSelectChat = (id: string) => {
     selectChat(id)
     router.push(`/chat/${id}`)
   }
+
+  const handleLogout = async () => {
+    logout()
+    router.push("/login");
+  };
 
   return (
     <Sidebar collapsible="icon" className="bg-background group">
@@ -92,9 +106,11 @@ export function AppSidebar() {
             {showIcon ? (
               <PanelIcon onClick={toggleSidebar} />
             ) : (
-              <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center cursor-pointer">
-                <span className="text-white font-bold text-sm">A</span>
-              </div>
+              <Link href="/">
+                <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center cursor-pointer">
+                  <span className="text-white font-bold text-sm">A</span>
+                </div>
+              </Link>
             )}
           </div>
 
@@ -124,10 +140,21 @@ export function AppSidebar() {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton className="cursor-pointer">
+                <User size={16} />
+                <Link href="/personalization">
+                  <span className="group-data-[state=collapsed]:hidden">
+                    Users
+                  </span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
+            <SidebarMenuItem>
+              <SidebarMenuButton className="cursor-pointer">
                 <Settings size={16} />
                 <Link href="/personalization">
                   <span className="group-data-[state=collapsed]:hidden">
-                    Personalization
+                    Collaborations
                   </span>
                 </Link>
               </SidebarMenuButton>
@@ -173,23 +200,51 @@ export function AppSidebar() {
         </ScrollArea>
       </SidebarContent>
 
-      <SidebarFooter className="px py-3 group">
-        <div className="flex items-center gap-23">
-          <div className="flex gap-2">
-            <Avatar className="h-9 w-9">
-              <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" />
-              <AvatarFallback>JD</AvatarFallback>
-            </Avatar>
+      <SidebarFooter className="px-3 py-3 group">
+        <div className="flex items-center w-full justify-between">
+          {/* LEFT: Avatar + Name (Dropdown Trigger) */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="flex gap-2 cursor-pointer select-none">
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src={user?.image ?? ""} />
+                  <AvatarFallback>
+                    {user?.name?.trim()?.charAt(0)?.toUpperCase() || ""}
+                  </AvatarFallback>
+                </Avatar>
 
-            <div className="flex-1 min-w-0 group-data-[state=collapsed]:hidden">
-              <p className="text-sm font-medium truncate">John Doe</p>
-              <p className="text-xs text-muted-foreground">Pro User</p>
-            </div>
-          </div>
+                <div className="flex-1 min-w-0 group-data-[state=collapsed]:hidden">
+                  <p className="text-sm font-medium truncate">{user?.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {user?.email}
+                  </p>
+                </div>
+              </div>
+            </DropdownMenuTrigger>
 
-          {/* <SidebarMenuButton className="cursor-pointer group-data-[state=collapsed]:hidden">
-            <LogOut size={16} />
-          </SidebarMenuButton> */}
+            <DropdownMenuContent
+              side="top"
+              align="start"
+              className="w-44"
+            >
+              <DropdownMenuItem onClick={() => router.push("/profile")}>
+                <User className="mr-2 h-4 w-4" />
+                My Profile
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                className="text-red-600 focus:text-red-600"
+                onClick={handleLogout}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* RIGHT: Theme Toggle */}
           <div className="cursor-pointer group-data-[state=collapsed]:hidden">
             <ThemeToggle />
           </div>
