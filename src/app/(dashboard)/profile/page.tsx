@@ -10,32 +10,58 @@ import { User } from "@/lib/type/type";
 export default function MyAccountPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
-      const res = await fetch("/api/user/edit", {
-        credentials: "include",
-      });
+      try {
+        const res = await fetch("/api/user/edit", {
+          credentials: "include",
+        });
 
-      if (res.ok) {
+        if (!res.ok) {
+          throw new Error("Unauthorized or failed to fetch user");
+        }
+
         const data = await res.json();
-        setUser(data.user);
-      }
 
-      setLoading(false);
+        if (!data?.user) {
+          throw new Error("User not found");
+        }
+
+        setUser(data.user);
+      } catch (err) {
+        console.error("Fetch user error:", err);
+        setError("Unable to load your profile. Please log in again.");
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchUser();
   }, []);
 
+  /* ---------------- Loading ---------------- */
   if (loading) {
-    return null; // or skeleton
+    return (
+      <div className="flex items-center justify-center min-h-75 text-muted-foreground">
+        Loading your profile…
+      </div>
+    );
   }
 
-  if (!user) {
-    return null;
+  /* ---------------- Error / No User ---------------- */
+  if (error || !user) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-75 gap-4">
+        <p className="text-muted-foreground text-sm">
+          {error ?? "You are not logged in."}
+        </p>
+      </div>
+    );
   }
 
+  /* ---------------- Main UI ---------------- */
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
       {/* Header */}
@@ -49,11 +75,13 @@ export default function MyAccountPage() {
           </Avatar>
 
           <div className="flex-1">
-            <h2 className="text-lg font-semibold">{user.name ?? "Unnamed User"}</h2>
-            <p className="text-sm text-muted-foreground">{user.email}</p>
+            <h2 className="text-lg font-semibold">
+              {user.name ?? "Unnamed User"}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {user.email}
+            </p>
           </div>
-
-          {/* <Badge variant="secondary">{user.role}</Badge> */}
         </CardContent>
       </Card>
 
@@ -65,7 +93,6 @@ export default function MyAccountPage() {
         <CardContent className="space-y-4">
           <InfoRow label="Name" value={user.name ?? "-"} />
           <InfoRow label="Email" value={user.email} />
-          {/* <InfoRow label="Role" value={user.role} /> */}
         </CardContent>
       </Card>
 
@@ -79,7 +106,9 @@ export default function MyAccountPage() {
             <span className="text-sm text-muted-foreground">
               Current Plan
             </span>
-            <Badge variant={user.subscriptionTag === "FREE" ? "outline" : "default"}>
+            <Badge
+              variant={user.subscriptionTag === "FREE" ? "outline" : "default"}
+            >
               {user.subscriptionTag}
             </Badge>
           </div>
@@ -88,6 +117,8 @@ export default function MyAccountPage() {
     </div>
   );
 }
+
+/* ---------------- Helper ---------------- */
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (

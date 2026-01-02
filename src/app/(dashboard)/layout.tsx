@@ -15,7 +15,7 @@ export default function DashboardLayout({
     return (
         <SidebarProvider>
             <div className="flex h-screen w-full">
-                <AppSidebar />
+                <AppSidebar/>
                 <main className="flex-1 overflow-auto">
                     {children}
                 </main>
