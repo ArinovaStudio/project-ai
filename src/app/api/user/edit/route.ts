@@ -8,9 +8,6 @@ export async function GET() {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  console.log("session", session.user.id);
-  console.log("session Details", session);
-
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -24,11 +21,14 @@ export async function GET() {
   });
 
   if (!user) {
+    console.log("not found");
+    
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
   return NextResponse.json({ user });
 }
+
 
 export async function PUT(req: Request) {
   const { searchParams } = new URL(req.url);

@@ -2,6 +2,40 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 
+export async function GET() {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const histories = await prisma.history.findMany({
+      where: {
+        userId: session.user.id,
+      },
+      include: {
+        messages: {
+          orderBy: { createdAt: 'desc' }
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return NextResponse.json({ histories }, { status: 200 });
+
+  } catch (error) {
+    // console.error("Fetch history error:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(req: NextRequest) {
   try {
     const session = await auth();

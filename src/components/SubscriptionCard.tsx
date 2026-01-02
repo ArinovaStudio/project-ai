@@ -33,14 +33,16 @@ export default function SubscriptionCard({
       className={cn(
         "relative rounded-2xl border transition-all duration-300 overflow-hidden flex flex-col",
         highlighted
-          ? "border-blue-300 bg-gradient-to-b from-blue-50 to-white shadow-lg shadow-blue-200/50 ring-1 ring-blue-300 md:scale-105"
-          : "border-slate-200 bg-white hover:border-slate-300 shadow-sm",
+          ? "border-primary/40 bg-primary/5 shadow-lg ring-1 ring-primary/30 md:scale-105"
+          : "border-border bg-card hover:border-primary/30 shadow-sm",
       )}
     >
       {/* Recommended Badge */}
       {highlighted && (
-        <div className="absolute top-4 right-4 inline-block rounded-full bg-blue-600 px-3 py-1">
-          <span className="text-xs font-semibold text-white">Recommended</span>
+        <div className="absolute top-4 right-4 inline-block rounded-full bg-blue-600 dark:bg-primary px-3 py-1">
+          <span className="text-xs font-semibold text-primary-foreground">
+            Recommended
+          </span>
         </div>
       )}
 
@@ -48,38 +50,53 @@ export default function SubscriptionCard({
       <div className="p-8 flex flex-col h-full">
         {/* Header */}
         <div className="mb-8">
-          <h3 className="text-2xl font-bold text-slate-900 mb-2">{name}</h3>
-          <p className="text-sm text-slate-600 mb-6">{description}</p>
+          <h3 className="text-2xl font-bold text-foreground mb-2">
+            {name}
+          </h3>
+
+          <p className="text-sm text-muted-foreground mb-6">
+            {description}
+          </p>
 
           {/* Price */}
           <div className="flex items-baseline gap-1">
             {price !== null ? (
               <>
-                <span className="text-5xl font-bold text-slate-900">${price}</span>
-                <span className="text-slate-600">{period}</span>
+                <span className="text-5xl font-bold text-foreground">
+                  ${price}
+                </span>
+                <span className="text-muted-foreground">
+                  {period}
+                </span>
               </>
             ) : (
-              <span className="text-3xl font-semibold text-slate-900">Custom Pricing</span>
+              <span className="text-3xl font-semibold text-foreground">
+                Custom Pricing
+              </span>
             )}
           </div>
         </div>
 
-        {/* Features List */}
+        {/* Features */}
         <div className="space-y-4 mb-8 flex-1">
           {features.map((feature, idx) => (
             <div key={idx} className="flex items-start gap-3">
-              <Check className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-              <span className="text-sm text-slate-700">{feature}</span>
+              <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+              <span className="text-sm text-muted-foreground">
+                {feature}
+              </span>
             </div>
           ))}
         </div>
 
-        {/* CTA Button */}
+        {/* CTA */}
         <Button
           onClick={onSelect}
           className={cn(
-            "w-full font-semibold transition-all duration-300 h-11",
-            highlighted ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-slate-200 text-slate-900 hover:bg-slate-300",
+            "w-full h-11 font-semibold transition-all duration-300 cursor-pointer",
+            highlighted
+              ? "bg-blue-600 dark:bg-primary text-primary-foreground hover:bg-blue-700"
+              : "bg-muted text-foreground hover:bg-muted/80",
           )}
         >
           {cta}

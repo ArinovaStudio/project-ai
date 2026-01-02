@@ -21,6 +21,11 @@ enum SubscriptionStatus {
   CANCELLED
 }
 
+enum Role {
+  PERSON
+  AI
+}
+
 //////////////////////////////////////
 // USER & AUTH
 //////////////////////////////////////
@@ -36,7 +41,7 @@ model User {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  histories     History[]
+  histories    History[]
   subscription Subscription[]
 }
 
@@ -47,11 +52,23 @@ model User {
 model History {
   id        String   @id @default(cuid())
   userId    String
-  action    String
-  metadata  Json?
   createdAt DateTime @default(now())
 
+  messages Message[]
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  historyId String
+  role      Role
+  content   String
+  createdAt DateTime @default(now())
+
+  history History @relation(fields: [historyId], references: [id], onDelete: Cascade)
+
+  @@index([historyId, createdAt])
 }
 
 //////////////////////////////////////
@@ -75,14 +92,14 @@ model SubscriptionPlan {
 //////////////////////////////////////
 
 model Subscription {
-  id        String              @id @default(cuid())
+  id        String             @id @default(cuid())
   userId    String
   planId    String
   status    SubscriptionStatus @default(ACTIVE)
   startDate DateTime
   endDate   DateTime
-  createdAt DateTime            @default(now())
-  updatedAt DateTime            @updatedAt
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
 
   user User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   plan SubscriptionPlan @relation(fields: [planId], references: [id])

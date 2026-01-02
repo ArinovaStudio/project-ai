@@ -27,6 +27,7 @@ import {
   MessageSquare,
   LogOut, User,
   PanelLeft,
+  ShoppingBag,
 } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import Link from "next/link"
@@ -137,41 +138,61 @@ export function AppSidebar() {
 
       <SidebarContent>
         <ScrollArea className="h-full px-2">
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton className="cursor-pointer">
-                <User size={16} />
-                <Link href="/personalization">
-                  <span className="group-data-[state=collapsed]:hidden">
-                    Users
-                  </span>
+          {user?.role === "USER" && (
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <Link href="/users">
+                  <SidebarMenuButton className="cursor-pointer">
+                    <User size={16} />
+                    <span className="group-data-[state=collapsed]:hidden">
+                      Users
+                    </span>
+                  </SidebarMenuButton>
                 </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+              </SidebarMenuItem>
 
-            <SidebarMenuItem>
-              <SidebarMenuButton className="cursor-pointer">
-                <Settings size={16} />
-                <Link href="/personalization">
-                  <span className="group-data-[state=collapsed]:hidden">
-                    Collaborations
-                  </span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild className="cursor-pointer">
+                  <Link
+                    href="/collaboration"
+                    className="flex w-full items-center gap-2"
+                  >
+                    <Settings size={16} />
+                    <span className="group-data-[state=collapsed]:hidden">
+                      Collaborations
+                    </span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
 
-            <SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild className="cursor-pointer">
+                  <Link
+                    href="/subscriptionplan"
+                    className="flex w-full items-center gap-2"
+                  >
+                    <ShoppingBag size={16} />
+                    <span className="group-data-[state=collapsed]:hidden">
+                      SubscriptionPlans
+                    </span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+            </SidebarMenu>
+          )}
+
+          <SidebarMenu className="mt-4"><SidebarMenuItem>
+            <Link href="/subscriptions">
               <SidebarMenuButton className="cursor-pointer">
                 <Crown size={16} />
-                <Link href="/subscriptions">
-                  <span className="group-data-[state=collapsed]:hidden">
-                    Upgrade to Pro
-                  </span>
-                </Link>
+                <span className="group-data-[state=collapsed]:hidden">
+                  Upgrade to Pro
+                </span>
               </SidebarMenuButton>
-            </SidebarMenuItem>
+            </Link>
+          </SidebarMenuItem>
           </SidebarMenu>
-
           <div className="mt-4 px-2 text-xs font-semibold text-muted-foreground group-data-[state=collapsed]:hidden">
             Chat History
           </div>
