@@ -1,17 +1,20 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+// import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/auth-provider";
 
 export default function LoginPage() {
+   const { login, signup, googleLogin } = useAuth();
+  const router = useRouter();
+
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,13 +22,9 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const result = await signIn("credentials", {
-        name,
-        email,
-        password,
-        action: isLogin ? "login" : "signup",
-        redirect: false,
-      });
+      const result = isLogin
+        ? await login(email, password)
+        : await signup(name, email, password);
 
       if (result?.error) {
         setError(result.error);
@@ -33,20 +32,11 @@ export default function LoginPage() {
         router.push("/");
         router.refresh();
       }
-    } catch (err) {
+    } catch {
       setError("Something went wrong");
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleGoogleSignIn = () => {
-    // Open Google OAuth in a popup for better UX
-    // Users can close the popup to return to login page
-    signIn("google", { 
-      callbackUrl: "/",
-      redirect: true 
-    });
   };
 
   return (
@@ -67,7 +57,7 @@ export default function LoginPage() {
 
           {/* Google Sign In */}
           <button
-            onClick={handleGoogleSignIn}
+            onClick={googleLogin}
             className="w-full bg-white hover:bg-gray-100 text-gray-800 font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-3 transition-all duration-200 shadow-lg hover:shadow-xl mb-2"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -91,7 +81,7 @@ export default function LoginPage() {
             Sign in with Google
           </button>
           <p className="text-xs text-slate-500 text-center mb-6">
-            You can use your browser's back button to return
+            You can use your browser&apos;s back button to return
           </p>
 
           {/* Divider */}
@@ -182,7 +172,7 @@ export default function LoginPage() {
             >
               {isLogin ? (
                 <>
-                  Don't have an account?{" "}
+                  Don&apos;t have an account?{" "}
                   <span className="text-blue-400 font-semibold">Sign Up</span>
                 </>
               ) : (
