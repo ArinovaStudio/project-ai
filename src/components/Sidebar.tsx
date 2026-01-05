@@ -31,7 +31,7 @@ import {
 } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import type { MouseEventHandler } from "react"
 import { ThemeToggle } from "./theme-toggle"
 import { useChat } from "@/context/chat-provider"
@@ -90,7 +90,7 @@ const menuItems = [
 export function PanelIcon({ className, onClick }: PanelIconProps) {
   return (
     <Button
-      variant="ghost"
+      variant="ghostanother"
       size="icon"
       onClick={onClick}
       className={`h-8 w-8 cursor-pointer ${className ?? ""}`}
@@ -104,7 +104,8 @@ export function AppSidebar() {
   const router = useRouter()
   const { toggleSidebar, state, setOpen } = useSidebar()
   const { chats, selectedChatId, selectChat } = useChat()
-  const { user, logout } = useAuth()
+  const { logout } = useAuth()
+  const [user, setUser] = useState<any>(null);
   // console.log("user = ", user)
 
   const { data: session } = useSession();
@@ -128,6 +129,22 @@ export function AppSidebar() {
     logout()
     router.push("/login");
   };
+
+  async function fetchUser() {
+    try {
+      const response = await fetch('/api/user/edit', { credentials: 'include' });
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+      }
+    } catch (error) {
+      console.error('Failed to fetch user:', error);
+    }
+  }
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
   return (
     <Sidebar collapsible="icon" className="bg-background group">
@@ -201,12 +218,12 @@ export function AppSidebar() {
             Chat History
           </div>
 
-          <SidebarMenu className="mt-2">
+          <SidebarMenu className="mt-2 group-data-[state=collapsed]:hidden">
             {chatHistory.map((chat) => (
               <SidebarMenuItem key={chat.id}>
                 <SidebarMenuButton
                   isActive={selectedChatId === chat.id}
-                  onClick={() => { handleSelectChat(chat.id); setOpen(false) }}
+                  onClick={() => { handleSelectChat(chat.id); }}
                   className="py-6 cursor-pointer"
                 >
                   <MessageSquare size={14} />
@@ -226,23 +243,31 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="px-3 py-3 group">
-        <div className="flex items-center w-full justify-between">
-          {/* LEFT: Avatar + Name (Dropdown Trigger) */}
+        {/* <div className="flex items-center w-full justify-between bg-amber-800">
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <div className="flex gap-2 cursor-pointer select-none">
-                <Avatar className="h-9 w-9">
+              <div className="flex gap-2 cursor-pointer select-none bg-amber-600">
+                <Avatar className="h-8 w-8 -ml-1">
                   <AvatarImage src={user?.image ?? ""} />
                   <AvatarFallback>
                     {user?.name?.trim()?.charAt(0)?.toUpperCase() || ""}
                   </AvatarFallback>
                 </Avatar>
+                <div className="flex justify-between items-center bg-amber-300 w-full">
+                  <div className="flex-1 min-w-0 group-data-[state=collapsed]:hidden">
+                    <div className="flex justify-between">
+                      <p className="text-sm font-medium truncate">{user?.name}</p>
+                      <div className="group-data-[state=collapsed]:hidden bg-[#CF5056] px-2 py-0.5 rounded-md text-white text-xs font-semibold">
+                        {user?.subscriptionTag}
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {user?.email}
+                    </p>
 
-                <div className="flex-1 min-w-0 group-data-[state=collapsed]:hidden">
-                  <p className="text-sm font-medium truncate">{user?.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {user?.email}
-                  </p>
+                  </div>
+
                 </div>
               </div>
             </DropdownMenuTrigger>
@@ -269,11 +294,85 @@ export function AppSidebar() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* RIGHT: Theme Toggle */}
+
           <div className="cursor-pointer group-data-[state=collapsed]:hidden">
             <ThemeToggle />
           </div>
+        </div> */}
+
+        <div
+          className="
+    w-full
+    group-data-[state=collapsed]:border-0
+    group-data-[state=collapsed]:p-0
+    group-data-[state=collapsed]:rounded-none
+    border px-2 py-2 rounded-md transition-colors
+  "
+        >
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              {/* PROFILE ROW (always visible avatar) */}
+              <div
+                onClick={() => router.push("/profile")}
+                className="flex gap-2 w-full cursor-pointer select-none"
+              >
+                <Avatar className="h-8 w-8 shrink-0">
+                  <AvatarImage src={user?.image ?? ""} />
+                  <AvatarFallback>
+                    {user?.name?.trim()?.charAt(0)?.toUpperCase() || ""}
+                  </AvatarFallback>
+                </Avatar>
+
+                <div className="flex items-center flex-1 min-w-0 group-data-[state=collapsed]:hidden">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm font-medium truncate">
+                        {user?.name}
+                      </p>
+
+                      {/* ✅ STOP propagation here */}
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          router.push("/subscriptions")
+                        }}
+                        className="bg-[#CF5056] px-2 py-0.5 rounded-md text-white text-xs font-semibold cursor-pointer"
+                      >
+                        {user?.subscriptionTag}
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground truncate">
+                      {user?.email}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+            </DropdownMenuTrigger>
+          </DropdownMenu>
+
+          {/* DIVIDER — hidden when collapsed */}
+          <div className="w-full border-t border-border my-2 group-data-[state=collapsed]:hidden" />
+
+          {/* EXTRA CONTENT — hidden when collapsed */}
+          <div className="flex items-center justify-between text-sm text-muted-foreground group-data-[state=collapsed]:hidden">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1 hover:text-red-600 transition-colors cursor-pointer"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </button>
+
+            <div className="hover:bg-transparent">
+              <ThemeToggle />
+            </div>
+
+          </div>
         </div>
+
+
       </SidebarFooter>
     </Sidebar>
   )
