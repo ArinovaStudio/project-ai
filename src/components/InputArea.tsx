@@ -52,7 +52,7 @@ export default function InputArea({ className = "", onSend }: InputAreaProps) {
           <Send />
         </Button>
 
-        <div className="flex gap-2 items-center">
+        {/* <div className="flex gap-2 items-center">
           <button
             onClick={listening ? stop : start}
             className="p-2 rounded-full border"
@@ -66,7 +66,7 @@ export default function InputArea({ className = "", onSend }: InputAreaProps) {
             placeholder="Speak…"
             className="flex-1 border px-3 py-2 rounded-md"
           />
-        </div>
+        </div> */}
       </div>
     </div>
   );
