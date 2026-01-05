@@ -37,6 +37,8 @@ import { ThemeToggle } from "./theme-toggle"
 import { useChat } from "@/context/chat-provider"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/context/auth-provider"
+import { useSession } from "next-auth/react";
+import Image from "next/image";
 
 // interface ChatItem {
 //   id: number
@@ -55,6 +57,36 @@ type PanelIconProps = {
   onClick: MouseEventHandler<HTMLButtonElement>
 }
 
+type Role = "USER" | "ADMIN";
+
+const menuItems = [
+  {
+    label: "Users",
+    href: "/users",
+    icon: User,
+    roles: ["ADMIN"],
+  },
+  {
+    label: "Collaborations",
+    href: "/collaboration",
+    icon: Settings,
+    roles: ["ADMIN"],
+  },
+  {
+    label: "SubscriptionPlans",
+    href: "/subscriptionplan",
+    icon: ShoppingBag,
+    roles: ["ADMIN"],
+  },
+  {
+    label: "Upgrade to Pro",
+    href: "/subscriptions",
+    icon: Crown,
+    roles: ["USER", "ADMIN"],
+  },
+];
+
+
 export function PanelIcon({ className, onClick }: PanelIconProps) {
   return (
     <Button
@@ -70,10 +102,13 @@ export function PanelIcon({ className, onClick }: PanelIconProps) {
 
 export function AppSidebar() {
   const router = useRouter()
-  const { toggleSidebar, state } = useSidebar()
+  const { toggleSidebar, state, setOpen } = useSidebar()
   const { chats, selectedChatId, selectChat } = useChat()
   const { user, logout } = useAuth()
   // console.log("user = ", user)
+
+  const { data: session } = useSession();
+  console.log("user = ", session?.user)
 
   const [isHovered, setIsHovered] = useState(false)
   const showIcon = state === "collapsed" && isHovered
@@ -108,8 +143,15 @@ export function AppSidebar() {
               <PanelIcon onClick={toggleSidebar} />
             ) : (
               <Link href="/">
-                <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center cursor-pointer">
-                  <span className="text-white font-bold text-sm">A</span>
+                <div className="w-8 h-8 rounded-lg overflow-hidden cursor-pointer">
+                  <Image
+                    src="/arinovalogo.png"
+                    alt="Logo"
+                    width={32}
+                    height={32}
+                    className="object-cover"
+                    priority
+                  />
                 </div>
               </Link>
             )}
@@ -129,7 +171,7 @@ export function AppSidebar() {
         {/* NEW CHAT */}
         <Button
           onClick={() => { router.push("/"); selectChat(0) }}
-          className="w-full gap-2 cursor-pointer"
+          className="w-full gap-2 bg-black"
         >
           <Plus size={18} />
           {state === "expanded" && <span>New Chat</span>}
@@ -138,61 +180,23 @@ export function AppSidebar() {
 
       <SidebarContent>
         <ScrollArea className="h-full px-2">
-          {user?.role === "USER" && (
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <Link href="/users">
-                  <SidebarMenuButton className="cursor-pointer">
-                    <User size={16} />
-                    <span className="group-data-[state=collapsed]:hidden">
-                      Users
-                    </span>
-                  </SidebarMenuButton>
-                </Link>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild className="cursor-pointer">
-                  <Link
-                    href="/collaboration"
-                    className="flex w-full items-center gap-2"
-                  >
-                    <Settings size={16} />
-                    <span className="group-data-[state=collapsed]:hidden">
-                      Collaborations
-                    </span>
+          <SidebarMenu>
+            {menuItems
+              .filter(item => item.roles.includes(session?.user?.role as Role))
+              .map(({ label, href, icon: Icon }) => (
+                <SidebarMenuItem key={href}>
+                  <Link href={href}>
+                    <SidebarMenuButton className="cursor-pointer" onClick={() => setOpen(false)}>
+                      <Icon size={16} />
+                      <span className="group-data-[state=collapsed]:hidden">
+                        {label}
+                      </span>
+                    </SidebarMenuButton>
                   </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild className="cursor-pointer">
-                  <Link
-                    href="/subscriptionplan"
-                    className="flex w-full items-center gap-2"
-                  >
-                    <ShoppingBag size={16} />
-                    <span className="group-data-[state=collapsed]:hidden">
-                      SubscriptionPlans
-                    </span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-            </SidebarMenu>
-          )}
-
-          <SidebarMenu className="mt-4"><SidebarMenuItem>
-            <Link href="/subscriptions">
-              <SidebarMenuButton className="cursor-pointer">
-                <Crown size={16} />
-                <span className="group-data-[state=collapsed]:hidden">
-                  Upgrade to Pro
-                </span>
-              </SidebarMenuButton>
-            </Link>
-          </SidebarMenuItem>
+                </SidebarMenuItem>
+              ))}
           </SidebarMenu>
+
           <div className="mt-4 px-2 text-xs font-semibold text-muted-foreground group-data-[state=collapsed]:hidden">
             Chat History
           </div>
@@ -202,7 +206,7 @@ export function AppSidebar() {
               <SidebarMenuItem key={chat.id}>
                 <SidebarMenuButton
                   isActive={selectedChatId === chat.id}
-                  onClick={() => handleSelectChat(chat.id)}
+                  onClick={() => { handleSelectChat(chat.id); setOpen(false) }}
                   className="py-6 cursor-pointer"
                 >
                   <MessageSquare size={14} />
