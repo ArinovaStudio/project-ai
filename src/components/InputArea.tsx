@@ -14,13 +14,13 @@ type InputAreaProps = {
 export default function InputArea({ className = "", onSend }: InputAreaProps) {
   const [value, setValue] = useState("");
 
-  const {
-    supported,
-    listening,
-    text,
-    start,
-    stop,
-  } = useSpeechToText()
+  // const {
+  //   supported,
+  //   listening,
+  //   text,
+  //   start,
+  //   stop,
+  // } = useSpeechToText()
 
   const handleSend = () => {
     if (!value.trim()) return;
@@ -29,9 +29,9 @@ export default function InputArea({ className = "", onSend }: InputAreaProps) {
   };
 
 
-  if (!supported) {
-    return <p>Speech recognition not supported</p>
-  }
+  // if (!supported) {
+  //   return <p>Speech recognition not supported</p>
+  // }
 
   return (
     <div className={`py-4 bg-background ${className}`}>
