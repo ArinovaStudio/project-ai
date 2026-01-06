@@ -109,7 +109,7 @@ export function AppSidebar() {
   // console.log("user = ", user)
 
   const { data: session } = useSession();
-  console.log("user = ", session?.user)
+  // console.log("user = ", session?.user)
 
   const [isHovered, setIsHovered] = useState(false)
   const showIcon = state === "collapsed" && isHovered
