@@ -187,12 +187,49 @@ export function AppSidebar() {
 
         {/* NEW CHAT */}
         <Button
-          onClick={() => { router.push("/"); selectChat(0) }}
-          className="w-full gap-2 bg-black"
+          onClick={() => {
+            router.push("/")
+            selectChat(0)
+          }}
+          className="
+    h-8
+    w-full
+    flex items-center justify-center gap-2
+
+    rounded-md
+    group-data-[state=collapsed]:w-8
+    group-data-[state=collapsed]:rounded-full
+    group-data-[state=collapsed]:px-0
+    group-data-[state=collapsed]:mx-auto
+
+    bg-gradient-to-r
+    from-[#1b1b2a]
+    via-[#3a2c6f]
+    to-[#7b4bff]
+
+    text-white font-medium
+    shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08),0_4px_12px_rgba(0,0,0,0.35)]
+
+    transition-all duration-200
+  "
         >
-          <Plus size={18} />
-          {state === "expanded" && <span>New Chat</span>}
+          <Plus
+            className="
+      opacity-90
+      h-[12px] w-[12px]
+      group-data-[state=expanded]:h-[16px]
+      group-data-[state=expanded]:w-[16px]
+    "
+          />
+
+          <span className="group-data-[state=collapsed]:hidden">
+            New Chat
+          </span>
         </Button>
+
+
+
+
       </SidebarHeader>
 
       <SidebarContent>
@@ -318,7 +355,7 @@ export function AppSidebar() {
               >
                 <Avatar className="h-8 w-8 shrink-0">
                   <AvatarImage src={user?.image ?? ""} />
-                  <AvatarFallback>
+                  <AvatarFallback className="dark:bg-[#333448] bg-[#8284b5]">
                     {user?.name?.trim()?.charAt(0)?.toUpperCase() || ""}
                   </AvatarFallback>
                 </Avatar>
