@@ -120,59 +120,76 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     };
 
     const sendMessage = async (content: string) => {
-        let chatId = selectedChatId;
+  if (!content.trim()) return;
 
-        // 🆕 CREATE HISTORY
-        if (!chatId) {
-            const res = await fetch("/api/history", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    action: "CREATE",
-                    metadata: {
-                        title: "Best Places to Visit in India",
-                        source: "dashboard",
-                        projectId: "abc123",
-                        createdFrom: "manual",
-                    },
-                }),
-            });
-
-
-            const data = await res.json();
-            chatId = data.historyId; // 🔥 IMPORTANT
-            setSelectedChatId(chatId);
-        }
-
-        // ➕ Add message locally
-        setChats((prev) =>
-            prev.map((chat) =>
-                chat.id === chatId
-                    ? {
-                        ...chat,
-                        messages: [
-                            ...chat.messages,
-                            {
-                                id: crypto.randomUUID(),
-                                role: "user",
-                                content,
-                            },
-                        ],
-                    }
-                    : chat
-            )
-        );
-
-        // 📨 Optional: send message to backend
-        await fetch(`/api/history?history=${chatId}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+  // 1️⃣ Show user message
+  setChats((prev) =>
+    prev.map((chat) =>
+      chat.id === selectedChatId
+        ? {
+            ...chat,
+            messages: [
+              ...chat.messages,
+              {
+                id: crypto.randomUUID(),
                 role: "user",
                 content,
-            }),
-        });
-    };
+              },
+            ],
+          }
+        : chat
+    )
+  );
+
+  // 2️⃣ Call backend
+  const res = await fetch("/api/ai", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message: content,
+      historyId: selectedChatId,
+    }),
+  });
+
+  const data = await res.json();
+//   console.log(data,"here u go");
+  
+  if (!res.ok) return;
+
+  // 3️⃣ Create chat if backend created history
+  if (!selectedChatId) {
+    setSelectedChatId(data.historyId);
+    setChats((prev) => [
+      {
+        id: data.historyId,
+        title: "New Chat",
+        date: new Date().toLocaleDateString(),
+        messages: [],
+      },
+      ...prev,
+    ]);
+  }
+
+  // 4️⃣ Append AI message
+  setChats((prev) =>
+    prev.map((chat) =>
+      chat.id === data.historyId
+        ? {
+            ...chat,
+            messages: [
+              ...chat.messages,
+              {
+                id: crypto.randomUUID(),
+                role: "bot",
+                content: data.message,
+              },
+            ],
+          }
+        : chat
+    )
+  );
+};
+
 
 
 

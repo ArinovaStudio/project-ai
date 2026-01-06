@@ -27,12 +27,12 @@ export default function CollaborationPage() {
     useState<CollaborationFormData | null>(null);
 
   async function handleCreate(data: CollaborationFormData) {
-    console.log("CREATE", data);
+    // console.log("CREATE", data);
     setShowForm(false);
   }
 
   async function handleUpdate(data: CollaborationFormData) {
-    console.log("UPDATE", data);
+    // console.log("UPDATE", data);
     setShowForm(false);
     setEditingData(null);
   }

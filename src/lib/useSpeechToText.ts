@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react"
 
 export function useSpeechToText() {
   const recognitionRef = useRef<any>(null)
+  const isRunningRef = useRef(false)
+
   const [listening, setListening] = useState(false)
   const [text, setText] = useState("")
   const [supported, setSupported] = useState(true)
@@ -21,7 +23,22 @@ export function useSpeechToText() {
     const recognition = new SpeechRecognition()
     recognition.lang = "en-US"
     recognition.interimResults = true
-    recognition.continuous = false
+    recognition.continuous = true // ✅ FIX
+
+    recognition.onstart = () => {
+      isRunningRef.current = true
+      setListening(true)
+    }
+
+    recognition.onend = () => {
+      isRunningRef.current = false
+      setListening(false)
+    }
+
+    recognition.onerror = () => {
+      isRunningRef.current = false
+      setListening(false)
+    }
 
     recognition.onresult = (event: any) => {
       let transcript = ""
@@ -31,15 +48,23 @@ export function useSpeechToText() {
       setText(transcript)
     }
 
-    recognition.onstart = () => setListening(true)
-    recognition.onend = () => setListening(false)
-    recognition.onerror = () => setListening(false)
-
     recognitionRef.current = recognition
+
+    return () => {
+      recognition.stop()
+    }
   }, [])
 
-  const start = () => recognitionRef.current?.start()
-  const stop = () => recognitionRef.current?.stop()
+  const start = () => {
+    if (!recognitionRef.current || isRunningRef.current) return
+    recognitionRef.current.start()
+  }
+
+  const stop = () => {
+    if (!recognitionRef.current || !isRunningRef.current) return
+    recognitionRef.current.stop()
+  }
+
   const reset = () => setText("")
 
   return {
