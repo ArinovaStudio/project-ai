@@ -1,10 +1,8 @@
 "use client"
 
-import { useRouter, useSearchParams } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft, Check } from "lucide-react"
-import { useState } from "react"
-import type React from "react"
+import { ArrowLeft } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useState } from 'react';
 
 const plans = {
   starter: { name: "Starter", price: 0, period: "/month" },
@@ -12,148 +10,202 @@ const plans = {
   enterprise: { name: "Enterprise", price: null, period: "Custom" },
 }
 
-export default function CheckoutContent() {
+export default function BillingForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const planId = searchParams.get("plan") || "professional"
   const plan = plans[planId as keyof typeof plans]
 
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    company: "",
-    country: "",
-  })
-
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
+    fullName: '',
+    country: 'India',
+    state: '',
+    city: '',
+    zipCode: '',
+    address1: '',
+    address2: ''
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    await new Promise((r) => setTimeout(r, 1500))
-    setSubmitted(true)
-    setIsSubmitting(false)
-    setTimeout(() => router.push("/"), 2000)
-  }
-
-  if (submitted) {
-    return (
-      <main className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="text-center">
-          <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Check className="w-10 h-10 text-primary" />
-          </div>
-          <h1 className="text-4xl font-bold text-foreground mb-3">Welcome!</h1>
-          <p className="text-lg text-muted-foreground mb-8">
-            Your {plan?.name} account has been created successfully.
-          </p>
-          <p className="text-muted-foreground">Redirecting you back...</p>
-        </div>
-      </main>
-    )
-  }
+  const handleSubmit = () => {
+    console.log('Form submitted:', formData);
+  };
 
   return (
-    <main className="min-h-screen bg-background px-4 py-16 sm:px-6 lg:px-8">
-      {/* Back */}
-      <div className="mx-auto max-w-2xl mb-8">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-primary hover:opacity-80 font-medium"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Plans
+    <div className="min-h-screen text-white p-6 ">
+      {/* Background decorative elements */}
+      {/* <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        Light mode blobs
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500 rounded-full blur-3xl opacity-20  dark:hidden" />
+        <div className="absolute bottom-20 right-40 w-96 h-96 bg-purple-400 rounded-full blur-3xl opacity-20  dark:hidden" />
+
+        Dark mode blobs
+        <div className="absolute top-20 left-10 w-72 h-72 bg-cyan-400 rounded-full blur-3xl opacity-30  hidden dark:block mix-blend-screen" />
+        <div className="absolute bottom-20 right-40 w-96 h-96 bg-fuchsia-500 rounded-full blur-3xl opacity-30  hidden dark:block mix-blend-screen" />
+      </div> */}
+      <div className="max-w-5xl mx-auto bg-background">
+        <button className="flex items-center gap-2 text-foreground/70 hover:text-foreground mb-2 sm:mt-5 text-sm cursor-pointer" onClick={() => router.back()}>
+          <span><ArrowLeft size={15} /></span> Back
         </button>
-      </div>
 
-      <div className="mx-auto max-w-2xl">
-        <h1 className="text-4xl font-bold text-foreground mb-12 text-center">
-          Complete Your Purchase
-        </h1>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-9">
+          {/* Left side - Form */}
+          <div className="lg:col-span-2">
+            <h1 className="text-3xl font-semibold mb-5 text-foreground">Billing details</h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Form */}
-          <div className="md:col-span-2">
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {["firstName", "lastName", "email", "phone", "company"].map((field) => (
-                <div key={field}>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    {field}
+            <div>
+              <h2 className="font-semibold mb-2 text-foreground">Enter your name and address</h2>
+
+              {/* Full Name */}
+              <div className="mb-2">
+                <label className="block text-sm text-foreground mb-1">
+                  Full name*
+                </label>
+                <input
+                  type="text"
+                  name="fullName"
+                  placeholder="First and last name"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg bg-background dark:bg-neutral-900/20 border border-neutral-800 placeholder-foreground/40 dark:placeholder-gray-500 focus:outline-none text-foreground"
+                />
+              </div>
+
+              {/* Country and State */}
+              <div className="grid grid-cols-2 gap-4 mb-2">
+                <div>
+                  <label className="block text-sm text-foreground dark:text-gray-300 mb-1">
+                    Country*
+                  </label>
+                  <select
+                    name="country"
+                    value={formData.country}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-lg bg-background dark:bg-neutral-900/20 border border-neutral-800 text-foreground focus:outline-none focus:border-neutral-700"
+                  >
+                    <option className='bg-background' value="India">🇮🇳 India</option>
+                    <option className='bg-background' value="United States">🇺🇸 United States</option>
+                    <option className='bg-background' value="United Kingdom">🇬🇧 United Kingdom</option>
+                    <option className='bg-background' value="Canada">🇨🇦 Canada</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm text-foreground dark:text-gray-300 mb-1">
+                    State/Region*
+                  </label>
+                  <select
+                    name="state"
+                    value={formData.state}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-lg bg-background dark:bg-neutral-900/20 border border-neutral-800 placeholder-foreground/40 dark:placeholder-gray-500 focus:outline-none text-foreground"
+                  >
+                    <option className='bg-background' value="">Select state/region</option>
+                    <option className='bg-background' value="Maharashtra">Maharashtra</option>
+                    <option className='bg-background' value="Delhi">Delhi</option>
+                    <option className='bg-background' value="Karnataka">Karnataka</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* City and Zip Code */}
+              <div className="grid grid-cols-2 gap-4 mb-2">
+                <div>
+                  <label className="block text-sm text-foreground mb-1">
+                    City*
                   </label>
                   <input
-                    name={field}
-                    value={(formData as any)[field]}
+                    type="text"
+                    name="city"
+                    value={formData.city}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 rounded-lg
-                      bg-background border border-border
-                      focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="w-full px-4 py-3 rounded-lg bg-background dark:bg-neutral-900/20 border border-neutral-800 placeholder-foreground/40 dark:placeholder-gray-500 focus:outline-none text-foreground"
                   />
                 </div>
-              ))}
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Country</label>
-                <select
-                  name="country"
-                  value={formData.country}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2.5 rounded-lg
-                    bg-background border border-border
-                    focus:outline-none focus:ring-2 focus:ring-ring"
-                >
-                  <option value="">Select a country</option>
-                  <option value="US">United States</option>
-                  <option value="IN">India</option>
-                  <option value="JP">Japan</option>
-                </select>
-              </div>
-
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full h-11 mt-6"
-              >
-                {isSubmitting ? "Processing..." : "Complete Purchase"}
-              </Button>
-            </form>
-          </div>
-
-          {/* Summary */}
-          <div className="md:col-span-1">
-            <div className="bg-muted border border-border rounded-xl p-6 sticky top-8">
-              <h2 className="text-lg font-bold text-foreground mb-6">Order Summary</h2>
-
-              <div className="space-y-4 mb-6 pb-6 border-b border-border">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">{plan?.name} Plan</span>
-                  <span className="font-semibold text-foreground">
-                    {plan?.price !== null ? `$${plan?.price}${plan?.period}` : plan?.period}
-                  </span>
+                <div>
+                  <label className="block text-sm text-foreground mb-1">
+                    Zip/postal code*
+                  </label>
+                  <input
+                    type="text"
+                    name="zipCode"
+                    value={formData.zipCode}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-lg bg-background dark:bg-neutral-900/20 border border-neutral-800 placeholder-foreground/40 dark:placeholder-gray-500 focus:outline-none text-foreground"
+                  />
                 </div>
               </div>
 
-              <div className="flex justify-between mb-6">
-                <span className="text-lg font-bold text-foreground">Total</span>
-                <span className="text-lg font-bold text-primary">
-                  {plan?.price !== null ? `$${plan?.price}` : "Custom"}
-                </span>
+              {/* Address Line 1 */}
+              <div className="mb-2">
+                <label className="block text-sm text-foreground mb-1">
+                  Address line 1*
+                </label>
+                <input
+                  type="text"
+                  name="address1"
+                  placeholder="Street address"
+                  value={formData.address1}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg bg-background dark:bg-neutral-900/20 border border-neutral-800 placeholder-foreground/40 dark:placeholder-gray-500 focus:outline-none text-foreground"
+                />
               </div>
 
-              <p className="text-xs text-muted-foreground text-center">
-                You will be charged when you complete this purchase.
-              </p>
+              {/* Address Line 2 */}
+              <div className="mb-2">
+                <label className="block text-sm text-foreground mb-1">
+                  Address line 2*
+                </label>
+                <input
+                  type="text"
+                  name="address2"
+                  placeholder="Apt/Suite/Unit, etc"
+                  value={formData.address2}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg bg-background dark:bg-neutral-900/20 border border-neutral-800 placeholder-foreground/40 dark:placeholder-gray-500 focus:outline-none text-foreground"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Right side - Summary */}
+          <div className="lg:col-span-1">
+            <div className="bg-background dark:bg-neutral-900/20 rounded-lg p-6 shadow-[0_0_20px_rgba(0,0,0,0.2)] dark:shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+              <div className="flex justify-between items-start mb-2">
+                <span className="text-foreground/70 dark:text-gray-300 text-sm">Plus plan</span>
+                <span className="text-foreground">{plan.name}</span>
+              </div>
+              <div className="flex justify-between items-start mb-2">
+                <span className="text-foreground/70 dark:text-gray-300 text-sm">Plan price</span>
+                <span className="text-foreground">₹ {plan.price}</span>
+              </div>
+              <a href="#" className="text-blue-500 text-xs hover:underline">
+                Have a promo code?
+              </a>
+
+              <div className="border-t border-neutral-800 my-6"></div>
+
+              <div className="flex justify-between items-center mb-6">
+                <span className="text-foreground font-medium">Total</span>
+                <span className="text-foreground text-lg font-medium">₹ {plan.price}</span>
+              </div>
+
+              <button
+                onClick={handleSubmit}
+                className="w-full bg-foreground text-background font-medium py-3 rounded-lg hover:bg-foreground/90 cursor-pointer transition-colors"
+              >
+                Next
+              </button>
             </div>
           </div>
         </div>
       </div>
-    </main>
-  )
+    </div>
+  );
 }

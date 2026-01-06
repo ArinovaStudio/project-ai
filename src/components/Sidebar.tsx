@@ -28,6 +28,8 @@ import {
   LogOut, User,
   PanelLeft,
   ShoppingBag,
+  MoreHorizontal,
+  Trash,
 } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import Link from "next/link"
@@ -85,6 +87,25 @@ const menuItems = [
     roles: ["USER", "ADMIN"],
   },
 ];
+
+function formatChatDate(dateString: string) {
+  const today = new Date();
+  const date = new Date(dateString);
+
+  // Remove time for accurate day diff
+  today.setHours(0, 0, 0, 0);
+  date.setHours(0, 0, 0, 0);
+
+  const diffTime = today.getTime() - date.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays < 14) return "Last week";
+
+  return `${Math.floor(diffDays / 7)} weeks ago`;
+}
 
 
 export function PanelIcon({ className, onClick }: PanelIconProps) {
@@ -226,10 +247,6 @@ export function AppSidebar() {
             New Chat
           </span>
         </Button>
-
-
-
-
       </SidebarHeader>
 
       <SidebarContent>
@@ -255,26 +272,48 @@ export function AppSidebar() {
             Chat History
           </div>
 
-          <SidebarMenu className="mt-2 group-data-[state=collapsed]:hidden">
+          <SidebarMenu className="mt-1 group-data-[state=collapsed]:hidden">
             {chatHistory.map((chat) => (
-              <SidebarMenuItem key={chat.id}>
-                <SidebarMenuButton
-                  isActive={selectedChatId === chat.id}
-                  onClick={() => { handleSelectChat(chat.id); }}
-                  className="py-6 cursor-pointer"
-                >
-                  <MessageSquare size={14} />
-                  <div className="flex flex-col text-left group-data-[state=collapsed]:hidden">
-                    <span className="truncate text-sm font-medium">
-                      {chat.title}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {chat.date}
-                    </span>
-                  </div>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+                <SidebarMenuItem key={chat.id} className="group/chat">
+                  <SidebarMenuButton
+                    isActive={selectedChatId === chat.id}
+                    onClick={() => {
+                      handleSelectChat(chat.id);
+                    }}
+                    className="py-6 cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between w-[95%]">
+                      <div className="flex flex-col text-left group-data-[state=collapsed]:hidden w-[75%]">
+                        <span className="truncate text-sm font-medium">
+                          {chat.title}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatChatDate(chat.date)}
+                        </span>
+                      </div>
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <div
+                            onClick={(e) => e.stopPropagation()}
+                            className="opacity-100 md:opacity-0 md:group-hover/chat:opacity-100 transition p-1 rounded-md hover:bg-muted"
+                          >
+                            <MoreHorizontal className="w-4 h-4 text-muted-foreground cursor-pointer" />
+                          </div>
+                        </DropdownMenuTrigger>
+
+
+                        <DropdownMenuContent align="end" className="w-32">
+                          <DropdownMenuItem className="text-red-600 focus:text-red-600">
+                            <Trash className="w-4 h-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
           </SidebarMenu>
         </ScrollArea>
       </SidebarContent>

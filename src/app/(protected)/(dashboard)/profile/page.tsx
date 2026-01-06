@@ -1,11 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { User } from "@/lib/type/type";
+import { CheckCircle, Mail, User as UserIcon } from "lucide-react";
+import Image from "next/image";
 
 export default function MyAccountPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -63,71 +61,90 @@ export default function MyAccountPage() {
 
   /* ---------------- Main UI ---------------- */
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
-      {/* Header */}
-      <Card>
-        <CardContent className="flex items-center gap-4 p-6">
-          <Avatar className="h-16 w-16">
-            <AvatarImage src={user.image ?? ""} />
-            <AvatarFallback className="text-xl">
-              {user.name?.trim()?.charAt(0)?.toUpperCase() || "U"}
-            </AvatarFallback>
-          </Avatar>
+    <div className="min-h-screen bg-background p-8 flex items-center justify-center">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Light mode blobs */}
+        <div className="absolute top-20 left-60 w-72 h-72 bg-blue-500 rounded-full blur-3xl opacity-20 animate-pulse dark:hidden" />
+        <div className="absolute bottom-20 right-40 w-96 h-96 bg-purple-400 rounded-full blur-3xl opacity-20 animate-pulse delay-1000 dark:hidden" />
 
-          <div className="flex-1">
-            <h2 className="text-lg font-semibold">
-              {user.name ?? "Unnamed User"}
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {user.email}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Account Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Account Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <InfoRow label="Name" value={user.name ?? "-"} />
-          <InfoRow label="Email" value={user.email} />
-        </CardContent>
-      </Card>
-
-      {/* Subscription */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Subscription</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">
-              Current Plan
-            </span>
-            <Badge
-              variant={user.subscriptionTag === "FREE" ? "outline" : "default"}
-            >
-              {user.subscriptionTag}
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-/* ---------------- Helper ---------------- */
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <>
-      <div className="flex justify-between text-sm">
-        <span className="text-muted-foreground">{label}</span>
-        <span className="font-medium">{value}</span>
+        {/* Dark mode blobs */}
+        <div className="absolute top-20 left-60 w-72 h-72 bg-cyan-400 rounded-full blur-3xl opacity-30 animate-pulse hidden dark:block mix-blend-screen" />
+        <div className="absolute bottom-20 right-40 w-96 h-96 bg-fuchsia-500 rounded-full blur-3xl opacity-30 animate-pulse delay-1000 hidden dark:block mix-blend-screen" />
       </div>
-      <Separator />
-    </>
+
+
+      <div className="relative max-w-2xl w-full space-y-6">
+        {/* Header Card */}
+        <div className="backdrop-blur-xl bg-background/20 rounded-3xl p-8 border border-white/20 shadow-[inset_0_0_8px_rgba(0,0,0,0.3)] dark:shadow-[inset_0_0_12px_rgba(255,255,255,0.2)]">
+
+          <div className="flex items-center space-x-6">
+            {user?.image ? (
+              <Image
+                src={user.image}
+                alt={user.name ?? "User avatar"}
+                className="w-20 h-20 rounded-full object-cover shadow-lg"
+              />
+            ) : (
+              <div className="w-20 h-20 rounded-full bg-linear-to-br from-blue-400 to-blue-600 flex items-center justify-center text-foreground text-3xl font-bold shadow-lg">
+                {user?.name?.charAt(0)?.toUpperCase()}
+              </div>
+            )}
+
+
+            <div>
+              <h1 className="text-3xl font-bold text-foreground mb-1">{user?.name}</h1>
+              <p className="text-foreground">{user?.email}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Account Information Card */}
+        <div className="backdrop-blur-xl bg-background/20 rounded-3xl p-8 border border-white/20 shadow-[inset_0_0_8px_rgba(0,0,0,0.3)] dark:shadow-[inset_0_0_12px_rgba(255,255,255,0.2)]">
+          <h2 className="text-xl font-semibold text-foreground mb-6">Account Information</h2>
+
+          <div className="space-y-4">
+            {/* Name Field */}
+            <div className="flex items-center justify-between px-4  rounded-xl ">
+              <div className="flex items-center space-x-3">
+                <UserIcon className="w-5 h-5 text-foreground/70" />
+                <span className="text-foreground/70">Name</span>
+              </div>
+              <span className="text-foreground font-medium">{user.name}</span>
+            </div>
+            <hr className="mx-4 border-border" />
+            {/* Email Field */}
+            <div className="flex items-center justify-between px-4 rounded-xl">
+              <div className="flex items-center space-x-3">
+                <Mail className="w-5 h-5 text-foreground/70" />
+                <span className="text-foreground/70">Email</span>
+              </div>
+              <span className="text-foreground font-medium">{user.email}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Subscription Card */}
+        <div className="backdrop-blur-xl bg-background/20 rounded-3xl p-8 border border-white/20 shadow-[inset_0_0_8px_rgba(0,0,0,0.3)] dark:shadow-[inset_0_0_12px_rgba(255,255,255,0.2)]">
+          <h2 className="text-xl font-semibold text-foreground mb-6">Subscription</h2>
+
+          <div className="flex items-center justify-between px-4 rounded-xl">
+            <span className="text-foreground/70">Current Plan</span>
+            <div
+              className={`flex items-center space-x-2 px-4 py-2 rounded-full shadow-lg ${user.subscriptionTag === "FREE"
+                ? "bg-[#CF5056]"
+                : "bg-linear-to-r from-blue-500 to-cyan-500"
+                }`}
+            >
+              {user.subscriptionTag !== "FREE" && <CheckCircle className="w-5 h-5 text-foreground" />}
+              <span className="text-foreground font-bold">
+                {user.subscriptionTag}
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
