@@ -32,10 +32,15 @@ export default function InputArea({ className = "", onSend }: InputAreaProps) {
     wsRef.current = ws;
 
     ws.onmessage = (e) => {
-      if (typeof e.data === "string") {
-        setValue(e.data);
-      }
-    };
+  if (typeof e.data === "string") {
+    setValue(prev =>
+      prev
+        ? `${prev.trim()} ${e.data.trim()}`
+        : e.data.trim()
+    )
+  }
+}
+
 
     // 2️⃣ Start PCM stream
     const { ctx, stream, processor } = await startPCMStream((pcm) => {

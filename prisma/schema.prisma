@@ -38,11 +38,15 @@ model User {
   password        String?
   role            UserRole @default(USER)
   subscriptionTag String   @default("FREE")
+  dateOfBirth    DateTime?
+  phoneNumber    String?
+  bio            String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   histories    History[]
   subscription Subscription[]
+  AddressInfo AddressInfo[]
 }
 
 //////////////////////////////////////
@@ -119,4 +123,22 @@ model Collaboration {
   timeline    DateTime
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+//////////////////////////////////////
+// ADDRESS INFORMATION
+//////////////////////////////////////
+
+model AddressInfo {
+  id        String   @id @default(cuid())
+  userId    String
+  street    String
+  city      String
+  state     String
+  zipCode   String
+  country   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

@@ -2,6 +2,16 @@ import { NextResponse } from 'next/server';
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 
+interface UserSession {
+  user: {
+    id?: string;
+    email?: string;
+    name?: string;
+    phoneNumber?: string;
+    dateOfBirth?: string;
+  };
+}
+
 export async function GET() {
   const session = await auth();
 
@@ -17,6 +27,7 @@ export async function GET() {
       //   take: 10,
       // },
       subscription: true,
+      AddressInfo: true,
     },
   });
 
@@ -38,12 +49,12 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { name, role } = await req.json();
+  const { name, phoneNumber, dateOfBirth } = await req.json() as UserSession["user"];
 
   try {
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: { name, role },
+      data: { name, phoneNumber, dateOfBirth },
       select: {
         id: true,
         name: true,
