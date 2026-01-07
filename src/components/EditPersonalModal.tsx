@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { User } from "@/lib/type/type";
+import toast from "react-hot-toast";
 
 export function EditPersonalModal({
   open,
@@ -18,7 +19,9 @@ export function EditPersonalModal({
     dateOfBirth: user.dateOfBirth ?? "",
   });
 
-  // ✅ RESET FORM EVERY TIME MODAL OPENS
+  const [loading, setLoading] = useState(false);
+
+  // 🔁 Reset form every time modal opens
   useEffect(() => {
     if (open) {
       setForm({
@@ -32,22 +35,41 @@ export function EditPersonalModal({
   if (!open) return null;
 
   const save = async () => {
-    await fetch(`/api/user/edit?user=${user.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: form.name,
-        phoneNumber: form.phoneNumber,
-        dateOfBirth: form.dateOfBirth,
-      }),
-    });
+    if (loading) return;
 
-    onClose();
-    location.reload();
+    try {
+      setLoading(true);
+
+      const res = await fetch(`/api/user/edit?user=${user.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          phoneNumber: form.phoneNumber,
+          dateOfBirth: form.dateOfBirth,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to update profile");
+      }
+
+      toast.success("Profile updated successfully");
+
+      onClose(); // close modal only after success
+
+      // allow toast to be seen before reload
+      setTimeout(() => {
+        location.reload();
+      }, 700);
+    } catch (err: any) {
+      toast.error(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
-
 
   return (
     <div
@@ -79,6 +101,7 @@ export function EditPersonalModal({
 
         {/* BODY */}
         <div className="relative px-6 py-6 space-y-5">
+          {/* Full Name */}
           <div className="space-y-1">
             <label className="text-xs uppercase tracking-wide text-muted-foreground">
               Full Name
@@ -99,6 +122,7 @@ export function EditPersonalModal({
             />
           </div>
 
+          {/* Email (locked) */}
           <div className="space-y-1">
             <label className="text-xs uppercase tracking-wide text-muted-foreground">
               Email Address
@@ -117,6 +141,7 @@ export function EditPersonalModal({
             />
           </div>
 
+          {/* Phone */}
           <div className="space-y-1">
             <label className="text-xs uppercase tracking-wide text-muted-foreground">
               Phone Number
@@ -137,6 +162,7 @@ export function EditPersonalModal({
             />
           </div>
 
+          {/* DOB */}
           <div className="space-y-1">
             <label className="text-xs uppercase tracking-wide text-muted-foreground">
               Date of Birth
@@ -163,18 +189,19 @@ export function EditPersonalModal({
         <div className="relative px-6 py-4 border-t border-white/10 flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="cursor-pointer rounded-xl px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-foreground"
+            disabled={loading}
+            className="cursor-pointer rounded-xl px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-foreground disabled:opacity-60"
           >
             Cancel
           </button>
           <button
             onClick={save}
-            className="cursor-pointer rounded-xl bg-linear-to-r from-blue-500 to-cyan-500 px-5 py-2 text-sm font-medium text-white shadow-lg"
+            disabled={loading}
+            className="cursor-pointer rounded-xl bg-linear-to-r from-blue-500 to-cyan-500 px-5 py-2 text-sm font-medium text-white shadow-lg disabled:opacity-60"
           >
-            Save Changes
+            {loading ? "Saving..." : "Save Changes"}
           </button>
         </div>
-
       </div>
     </div>
   );

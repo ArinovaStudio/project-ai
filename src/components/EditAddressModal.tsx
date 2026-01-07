@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
 
 export function EditAddressModal({
   open,
@@ -9,7 +10,7 @@ export function EditAddressModal({
 }: {
   open: boolean;
   onClose: () => void;
-  address: any;
+  address: any | null;
 }) {
   const [form, setForm] = useState({
     address1: "",
@@ -20,16 +21,18 @@ export function EditAddressModal({
     postalCode: "",
   });
 
-  // 🔑 RESET FORM EVERY TIME MODAL OPENS
+  const isEdit = Boolean(address);
+
+  // 🔑 RESET FORM WHEN OPEN
   useEffect(() => {
     if (open) {
       setForm({
-        address1: address?.address1 ?? "",
-        address2: address?.address2 ?? "",
+        address1: address?.Address1 ?? "",
+        address2: address?.Address2 ?? "",
         city: address?.city ?? "",
         state: address?.state ?? "",
         country: address?.country ?? "",
-        postalCode: address?.postalCode ?? "",
+        postalCode: address?.zipCode ?? "",
       });
     }
   }, [open, address]);
@@ -37,23 +40,42 @@ export function EditAddressModal({
   if (!open) return null;
 
   const save = async () => {
-    await fetch("/api/user/update-address", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
+    const payload = {
+      Address1: form.address1,
+      Address2: form.address2 || null,
+      city: form.city,
+      state: form.state,
+      country: form.country,
+      zipCode: form.postalCode,
+    };
 
-    onClose();         // auto-close
-    location.reload(); // keep your existing behavior
+    try {
+      const res = await fetch("/api/user/address", {
+        method: isEdit ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.error || "Failed to save address");
+        return;
+      }
+
+      toast.success(isEdit ? "Address updated" : "Address added");
+      onClose();
+      location.reload(); // keep your current flow
+    } catch {
+      toast.error("Something went wrong");
+    }
   };
 
   return (
-    /* 🌑 BACKDROP — click closes modal */
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-md"
       onClick={onClose}
     >
-      {/* 🧊 GLASS CARD */}
       <div
         onClick={(e) => e.stopPropagation()}
         className="
@@ -65,37 +87,34 @@ export function EditAddressModal({
           dark:shadow-[0_20px_60px_rgba(0,0,0,0.8)]
         "
       >
-        {/* inner glow */}
         <div className="absolute inset-0 rounded-3xl ring-1 ring-white/10 pointer-events-none" />
 
         {/* HEADER */}
-        <div className="relative px-6 pt-6 pb-4 border-b border-white/10">
-          <h2 className="text-xl font-semibold text-foreground">
-            Address Information
+        <div className="px-6 pt-6 pb-4 border-b border-white/10">
+          <h2 className="text-xl font-semibold">
+            {isEdit ? "Edit Address" : "Add Address"}
           </h2>
           <p className="text-sm text-muted-foreground">
-            Update your address details.
+            Manage your address information.
           </p>
         </div>
 
         {/* BODY */}
-        <div className="relative px-6 py-6 space-y-5">
-          {(
-            [
-              ["Address Line 1", "address1"],
-              ["Address Line 2", "address2"],
-              ["City", "city"],
-              ["State", "state"],
-              ["Country", "country"],
-              ["Postal Code", "postalCode"],
-            ] as const
-          ).map(([label, key]) => (
+        <div className="px-6 py-6 space-y-5">
+          {[
+            ["Address Line 1", "address1"],
+            ["Address Line 2", "address2"],
+            ["City", "city"],
+            ["State", "state"],
+            ["Country", "country"],
+            ["Postal Code", "postalCode"],
+          ].map(([label, key]) => (
             <div key={key} className="space-y-1">
               <label className="text-xs uppercase tracking-wide text-muted-foreground">
                 {label}
               </label>
               <input
-                value={form[key]}
+                value={(form as any)[key]}
                 onChange={(e) =>
                   setForm({ ...form, [key]: e.target.value })
                 }
@@ -113,7 +132,7 @@ export function EditAddressModal({
         </div>
 
         {/* FOOTER */}
-        <div className="relative px-6 py-4 border-t border-white/10 flex justify-end gap-3">
+        <div className="px-6 py-4 border-t border-white/10 flex justify-end gap-3">
           <button
             onClick={onClose}
             className="cursor-pointer rounded-xl px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-foreground"
