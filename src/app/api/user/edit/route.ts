@@ -22,10 +22,10 @@ export async function GET() {
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     include: {
-      // histories: {
-      //   orderBy: { createdAt: "desc" },
-      //   take: 10,
-      // },
+      histories: {
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      },
       subscription: true,
       AddressInfo: true,
     },
@@ -33,7 +33,7 @@ export async function GET() {
 
   if (!user) {
     console.log("not found");
-    
+
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
