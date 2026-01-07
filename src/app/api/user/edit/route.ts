@@ -22,10 +22,10 @@ export async function GET() {
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     include: {
-      // histories: {
-      //   orderBy: { createdAt: "desc" },
-      //   take: 10,
-      // },
+      histories: {
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      },
       subscription: true,
       AddressInfo: true,
     },
@@ -33,7 +33,7 @@ export async function GET() {
 
   if (!user) {
     console.log("not found");
-    
+
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
@@ -43,18 +43,25 @@ export async function GET() {
 
 export async function PUT(req: Request) {
   const { searchParams } = new URL(req.url);
-  const userId = searchParams.get('user');
+  const userId = searchParams.get("user");
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { name, phoneNumber, dateOfBirth } = await req.json() as UserSession["user"];
+  const body = await req.json();
+  const { name, phoneNumber, dateOfBirth } = body;
 
   try {
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: { name, phoneNumber, dateOfBirth },
+      data: {
+        name,
+        phoneNumber,
+        dateOfBirth: dateOfBirth
+          ? new Date(dateOfBirth) // ✅ REQUIRED FIX
+          : null,
+      },
       select: {
         id: true,
         name: true,
@@ -67,10 +74,13 @@ export async function PUT(req: Request) {
 
     return NextResponse.json({ user: updatedUser });
   } catch (error) {
-    // console.error("Error updating user:", error);
-    return NextResponse.json({ error: "Failed to update user" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to update user" },
+      { status: 500 }
+    );
   }
 }
+
 
 export async function DELETE() {
   try {

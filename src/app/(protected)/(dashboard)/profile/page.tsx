@@ -28,6 +28,7 @@ export default function AccountDashboard() {
 
         const data = await res.json();
         if (!data?.user) throw new Error("User not found");
+console.log(data.user);
 
         setUser(data.user);
       } catch {
