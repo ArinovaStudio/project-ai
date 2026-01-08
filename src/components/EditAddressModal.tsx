@@ -3,6 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import { Country, State, City } from "country-state-city";
 import { toast } from "react-hot-toast";
+import { Country, State, City } from "country-state-city";
+import { ChevronDown } from "lucide-react";
+
 
 export function EditAddressModal({
   open,
@@ -22,6 +25,16 @@ export function EditAddressModal({
     postalCode: "",
   });
 
+
+  const [countryOpen, setCountryOpen] = useState(false);
+  const [countrySearch, setCountrySearch] = useState("");
+
+  const [stateSearch, setStateSearch] = useState("");
+  const [stateOpen, setStateOpen] = useState(false);
+  
+  const [cityOpen, setCityOpen] = useState(false);
+  const [citySearch, setCitySearch] = useState("");
+  const [showCities, setShowCities] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedState, setSelectedState] = useState("");
 
@@ -35,6 +48,36 @@ export function EditAddressModal({
   const countryRef = useRef<HTMLDivElement | null>(null);
   const stateRef = useRef<HTMLDivElement | null>(null);
   const cityRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+
+      if (
+        countryRef.current &&
+        countryRef.current.contains(target)
+      ) return;
+
+      if (
+        stateRef.current &&
+        stateRef.current.contains(target)
+      ) return;
+
+      if (
+        cityRef.current &&
+        cityRef.current.contains(target)
+      ) return;
+
+      // clicked outside ALL dropdowns
+      setCountryOpen(false);
+      setStateOpen(false);
+      setCityOpen(false);
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const isEdit = Boolean(address);
 
@@ -152,178 +195,187 @@ export function EditAddressModal({
         </div>
 
         {/* BODY */}
-        <div className="px-6 py-6 space-y-4">
-          <input
-            value={form.address1}
-            onChange={(e) =>
-              setForm({ ...form, address1: e.target.value })
-            }
-            placeholder="Address Line 1"
-            className={baseInput}
-          />
-
-          <input
-            value={form.address2}
-            onChange={(e) =>
-              setForm({ ...form, address2: e.target.value })
-            }
-            placeholder="Address Line 2"
-            className={baseInput}
-          />
-
+        <div className="px-6 py-6 space-y-5">
+          <div>
+            {[
+              ["Address Line 1", "address1"],
+              ["Address Line 2", "address2"],
+              ["Postal Code", "postalCode"],
+            ].map(([label, key]) => (
+              <div key={key} className="space-y-1">
+                <label className="text-xs uppercase tracking-wide text-muted-foreground">
+                  {label}
+                </label>
+                <input
+                  value={(form as any)[key]}
+                  onChange={(e) =>
+                    setForm({ ...form, [key]: e.target.value })
+                  }
+                  className="
+                  w-full rounded-xl
+                  border border-black/10 dark:border-white/15
+                  bg-white/80 dark:bg-neutral-800/60
+                  px-4 py-2 text-sm text-foreground
+                  outline-none
+                  focus:ring-2 focus:ring-cyan-400/50
+                "
+                />
+              </div>
+            ))}
+          </div>
           {/* COUNTRY */}
-          <div ref={countryRef} className="relative">
-            <div
-              className={baseInput + " cursor-pointer flex justify-between"}
-              onClick={() => {
-                setCountryOpen(!countryOpen);
-                setStateOpen(false);
-                setCityOpen(false);
-              }}
+          <div className="space-y-1 relative" ref={countryRef}>
+            <label className="text-xs uppercase tracking-wide text-muted-foreground">
+              Country
+            </label>
+
+            <button
+              type="button"
+              onClick={() => setCountryOpen((p) => !p)}
+              className="w-full flex justify-between items-center rounded-xl border border-black/10 dark:border-white/15 bg-white/80 dark:bg-neutral-800/60 px-4 py-2 text-sm"
             >
               <span>
-                {selectedCountry
-                  ? Country.getAllCountries().find(
-                      (c) => c.isoCode === selectedCountry
-                    )?.name
-                  : "Select Country"}
+                {form.country || "Select country"}
               </span>
-            </div>
+              <span
+                className={`transition-transform ${countryOpen ? "rotate-180" : ""
+                  }`}
+              >
+                <ChevronDown />
+              </span>
+            </button>
 
             {countryOpen && (
-              <div className="absolute z-50 mt-1 w-full rounded-xl bg-background border border-black/10 max-h-52 overflow-auto">
+              <div className="absolute z-30 mt-1 w-full rounded-xl border border-white/15 bg-background shadow-xl">
                 <input
+                  placeholder="Search country..."
                   value={countrySearch}
                   onChange={(e) => setCountrySearch(e.target.value)}
-                  placeholder="Search country..."
-                  className="w-full px-3 py-2 border-b outline-none text-sm"
+                  className="w-full px-3 py-2 border-b border-white/10 bg-transparent outline-none text-sm"
                 />
-                {Country.getAllCountries()
-                  .filter((c) =>
-                    c.name
-                      .toLowerCase()
-                      .includes(countrySearch.toLowerCase())
-                  )
-                  .map((c) => (
-                    <div
-                      key={c.isoCode}
-                      onClick={() => {
-                        setSelectedCountry(c.isoCode);
-                        setSelectedState("");
-                        setCountryOpen(false);
-                        setCountrySearch("");
-                      }}
-                      className="px-4 py-2 hover:bg-neutral-200 dark:hover:bg-neutral-800 cursor-pointer"
-                    >
-                      {c.name}
-                    </div>
-                  ))}
+
+                <ul className="max-h-40 overflow-auto">
+                  {Country.getAllCountries()
+                    .filter((c) =>
+                      c.name.toLowerCase().includes(countrySearch.toLowerCase())
+                    )
+                    .map((c) => (
+                      <li
+                        key={c.isoCode}
+                        onClick={() => {
+                          setForm({ ...form, country: c.isoCode, state: "", city: "" });
+                          setCountryOpen(false);
+                          setCountrySearch("");
+                        }}
+                        className="px-4 py-2 cursor-pointer hover:bg-neutral-800/40"
+                      >
+                        {c.name}
+                      </li>
+                    ))}
+                </ul>
               </div>
             )}
           </div>
-
           {/* STATE */}
-          <div ref={stateRef} className="relative">
-            <div
-              className={`${baseInput} cursor-pointer flex justify-between ${
-                !selectedCountry && "opacity-50 cursor-not-allowed"
-              }`}
-              onClick={() => {
-                if (!selectedCountry) return;
-                setStateOpen(!stateOpen);
-                setCountryOpen(false);
-                setCityOpen(false);
-              }}
+          <div className="space-y-1 relative" ref={stateRef}>
+            <label className="text-xs uppercase tracking-wide text-muted-foreground">
+              State
+            </label>
+
+            <button
+              type="button"
+              disabled={!form.country}
+              onClick={() => setStateOpen((p) => !p)}
+              className="w-full flex justify-between items-center rounded-xl border border-black/10 dark:border-white/15 bg-white/80 dark:bg-neutral-800/60 px-4 py-2 text-sm disabled:cursor-not-allowed"
             >
               <span>
-                {selectedState
-                  ? State.getStatesOfCountry(selectedCountry).find(
-                      (s) => s.isoCode === selectedState
-                    )?.name
-                  : "Select State"}
+                {form.state || "Select state"}
               </span>
-            </div>
+              <span
+                className={`transition-transform ${stateOpen ? "rotate-180" : ""
+                  }`}
+              >
+                <ChevronDown />
+              </span>
+            </button>
 
             {stateOpen && (
-              <div className="absolute z-50 mt-1 w-full rounded-xl bg-background border border-black/10 max-h-52 overflow-auto">
+              <div className="absolute z-30 mt-1 w-full rounded-xl border border-white/15 bg-background shadow-xl">
                 <input
+                  placeholder="Search state..."
                   value={stateSearch}
                   onChange={(e) => setStateSearch(e.target.value)}
-                  placeholder="Search state..."
-                  className="w-full px-3 py-2 border-b outline-none text-sm"
+                  className="w-full px-3 py-2 border-b border-white/10 bg-transparent outline-none text-sm"
                 />
-                {State.getStatesOfCountry(selectedCountry)
-                  .filter((s) =>
-                    s.name
-                      .toLowerCase()
-                      .includes(stateSearch.toLowerCase())
-                  )
-                  .map((s) => (
-                    <div
-                      key={s.isoCode}
-                      onClick={() => {
-                        setSelectedState(s.isoCode);
-                        setForm({ ...form, city: "" });
-                        setStateOpen(false);
-                        setStateSearch("");
-                      }}
-                      className="px-4 py-2 hover:bg-neutral-200 dark:hover:bg-neutral-800 cursor-pointer"
-                    >
-                      {s.name}
-                    </div>
-                  ))}
+
+                <ul className="max-h-40 overflow-auto">
+                  {State.getStatesOfCountry(form.country)
+                    .filter((s) =>
+                      s.name.toLowerCase().includes(stateSearch.toLowerCase())
+                    )
+                    .map((s) => (
+                      <li
+                        key={s.isoCode}
+                        onMouseDown={() => {
+                          setForm({ ...form, state: s.name, city: "" });
+                          setStateOpen(false);
+                          setStateSearch("");
+                        }}
+                        className="px-4 py-2 cursor-pointer hover:bg-neutral-800/40"
+                      >
+                        {s.name}
+                      </li>
+                    ))}
+                </ul>
               </div>
             )}
           </div>
 
           {/* CITY */}
-          <div ref={cityRef} className="relative">
+          <div className="space-y-1 relative" ref={cityRef}>
+            <label className="text-xs uppercase tracking-wide text-muted-foreground">
+              City
+            </label>
+
             <input
               value={form.city}
-              disabled={!selectedState}
-              onFocus={() => setCityOpen(true)}
-              onChange={(e) =>
-                setForm({ ...form, city: e.target.value })
-              }
-              placeholder="City"
-              className={baseInput}
+              onChange={(e) => {
+                setForm({ ...form, city: e.target.value });
+                setCitySearch(e.target.value);
+                setShowCities(true);
+              }}
+              onBlur={() => setTimeout(() => setShowCities(false), 150)}
+              disabled={!form.state}
+              placeholder="Start typing city..."
+              className="w-full rounded-xl border border-black/10 dark:border-white/15 bg-white/80 dark:bg-neutral-800/60 px-4 py-2 text-sm disabled:cursor-not-allowed"
             />
 
-            {cityOpen && selectedState && (
-              <div className="absolute z-50 mt-1 w-full rounded-xl bg-background border border-black/10 max-h-52 overflow-auto">
+            {showCities && citySearch && (
+              <ul className="absolute z-30 mt-1 w-full max-h-40 overflow-auto rounded-xl border border-white/15 bg-background shadow-xl">
                 {City.getCitiesOfState(
-                  selectedCountry,
-                  selectedState
+                  form.country,
+                  State.getStatesOfCountry(form.country).find(
+                    (s) => s.name === form.state
+                  )?.isoCode || ""
                 )
                   .filter((c) =>
-                    c.name
-                      .toLowerCase()
-                      .includes(form.city.toLowerCase())
+                    c.name.toLowerCase().includes(citySearch.toLowerCase())
                   )
-                  .map((c) => (
-                    <div
-                      key={c.name}
-                      onClick={() => {
+                  .map((c, i) => (
+                    <li
+                      key={i}
+                      onMouseDown={() => {
                         setForm({ ...form, city: c.name });
-                        setCityOpen(false);
+                        setShowCities(false);
                       }}
-                      className="px-4 py-2 hover:bg-neutral-200 dark:hover:bg-neutral-800 cursor-pointer"
+                      className="px-4 py-2 cursor-pointer hover:bg-neutral-800/40"
                     >
                       {c.name}
-                    </div>
+                    </li>
                   ))}
-              </div>
+              </ul>
             )}
           </div>
-
-          <input
-            value={form.postalCode}
-            onChange={(e) =>
-              setForm({ ...form, postalCode: e.target.value })
-            }
-            placeholder="Postal Code"
-            className={baseInput}
-          />
         </div>
 
         {/* FOOTER */}

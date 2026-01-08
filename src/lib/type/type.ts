@@ -5,7 +5,7 @@ export type AddressInfo = {
   city: string | null;
   state: string | null;
   country: string | null;
-  postalCode: string | null;
+  zipCode: string | null;
   createdAt: string;
   updatedAt: string;
   zipCode: string | null;

@@ -29,6 +29,7 @@ export default function AccountDashboard() {
 
         const data = await res.json();
         if (!data?.user) throw new Error("User not found");
+
         console.log(data.user);
 
         setUser(data.user);
@@ -59,6 +60,7 @@ export default function AccountDashboard() {
   }
 
   const address = user.AddressInfo?.[0] ?? null;
+//   console.log("\ndata = ",address)
   const subscription = user.subscription?.[0] ?? null;
   const plan = subscription?.plan ?? null;
 

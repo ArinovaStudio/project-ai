@@ -8,10 +8,9 @@ interface SubscriptionCardProps {
   id: string
   name: string
   price: number | null
-  period: string
+  duration: string
   description: string
   features: string[]
-  cta: string
   highlighted: boolean
   isSelected: boolean
   onSelect: () => void
@@ -20,10 +19,9 @@ interface SubscriptionCardProps {
 export default function SubscriptionCard({
   name,
   price,
-  period,
+  duration,
   description,
   features,
-  cta,
   highlighted,
   isSelected,
   onSelect,
@@ -31,23 +29,33 @@ export default function SubscriptionCard({
   return (
     <div
       className={cn(
-        "relative rounded-2xl border transition-all duration-300 overflow-hidden flex flex-col",
+        "relative rounded-2xl border transition-all duration-300 overflow-hidden flex flex-col backdrop-blur-xl bg-white/10 dark:bg-black/20 ",
         highlighted
-          ? "border-primary/40 bg-primary/5 shadow-lg ring-1 ring-primary/30 md:scale-105"
-          : "border-border bg-card hover:border-primary/30 shadow-sm",
+          ? "border-primary/40 shadow-[0_0_45px_rgba(59,130,246,0.35)] ring-1 ring-primary/40 md:scale-105 hover:scale-[1.1]"
+          : "border-white/20 dark:border-white/10 shadow-sm hover:scale-[1.02]",
       )}
     >
+      {/* Glass Gradient Overlay */}
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-white/20 via-white/5 to-transparent dark:from-white/10 dark:via-transparent" />
+
       {/* Recommended Badge */}
       {highlighted && (
-        <div className="absolute top-4 right-4 inline-block rounded-full bg-blue-600 dark:bg-primary px-3 py-1">
-          <span className="text-xs font-semibold text-primary-foreground">
-            Recommended
-          </span>
-        </div>
+        <>
+          {/* Glow */}
+          <div className="absolute -top-6 -right-6 w-28 h-28 bg-blue-500/30 blur-3xl rounded-full" />
+
+          <div className="absolute top-4 right-4 z-10">
+            <div className="rounded-full bg-blue-600/90 backdrop-blur-md px-4 py-1.5 shadow-lg">
+              <span className="text-xs font-semibold text-white tracking-wide">
+                Recommended
+              </span>
+            </div>
+          </div>
+        </>
       )}
 
       {/* Card Content */}
-      <div className="p-8 flex flex-col h-full">
+      <div className="relative p-8 flex flex-col h-full">
         {/* Header */}
         <div className="mb-8">
           <h3 className="text-2xl font-bold text-foreground mb-2">
@@ -65,9 +73,9 @@ export default function SubscriptionCard({
                 <span className="text-5xl font-bold text-foreground">
                   ${price}
                 </span>
-                <span className="text-muted-foreground">
-                  {period}
-                </span>
+               {price!==0 && <span className="text-muted-foreground">
+                  {duration} days
+                </span>}
               </>
             ) : (
               <span className="text-3xl font-semibold text-foreground">
@@ -81,7 +89,7 @@ export default function SubscriptionCard({
         <div className="space-y-4 mb-8 flex-1">
           {features.map((feature, idx) => (
             <div key={idx} className="flex items-start gap-3">
-              <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+              <Check className="w-5 h-5 text-blue-500 shrink-0 mt-0.5 drop-shadow" />
               <span className="text-sm text-muted-foreground">
                 {feature}
               </span>
@@ -93,13 +101,13 @@ export default function SubscriptionCard({
         <Button
           onClick={onSelect}
           className={cn(
-            "w-full h-11 font-semibold transition-all duration-300 cursor-pointer",
+            "w-full h-11 font-semibold transition-all duration-200 cursor-pointer backdrop-blur",
             highlighted
-              ? "bg-blue-600 dark:bg-primary text-primary-foreground hover:bg-blue-700"
-              : "bg-muted text-foreground hover:bg-muted/80",
+              ? "bg-blue-600 text-white shadow-lg shadow-blue-600/40 hover:bg-blue-700 hover:scale-[1.02]"
+              : "bg-gray-400/30 text-foreground hover:bg-gray-400/40 hover:scale-[1.02]",
           )}
         >
-          {cta}
+          Buy Now
         </Button>
       </div>
     </div>
