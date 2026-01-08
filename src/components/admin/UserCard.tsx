@@ -36,12 +36,12 @@ export default function UserCard({
 
       {onEdit && (
         <div className="mt-4 flex justify-end">
-          {/* <button
+          <button
             onClick={onEdit}
             className="text-sm text-primary hover:underline"
           >
             Edit
-          </button> */}
+          </button>
         </div>
       )}
     </div>

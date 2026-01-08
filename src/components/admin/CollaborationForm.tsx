@@ -43,103 +43,156 @@ export default function CollaborationForm({
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
+    <div
       className="
-    w-full max-w-xl rounded-xl
-    bg-card border border-border
-    shadow-2xl ring-1 ring-border/50
-    p-8 space-y-6
-    animate-in fade-in zoom-in-95
-  "
+        w-full max-w-xl
+        rounded-xl
+
+        border
+        border-black/10
+        dark:border-white/10
+
+        bg-[linear-gradient(135deg,rgba(255,255,255,0.9),rgba(255,255,255,0.6))]
+        dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0.04))]
+
+        backdrop-blur-xl
+        backdrop-saturate-150
+
+        shadow-[0_8px_32px_rgba(0,0,0,0.18)]
+        dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)]
+
+        p-6 sm:p-8
+      "
     >
-      {/* Header */}
-      <div className="space-y-1 border-b border-border pb-4">
-        <h2 className="text-lg font-semibold tracking-tight">
-          {initialData ? "Edit Collaboration" : "Create Collaboration"}
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          {initialData
-            ? "Update collaboration details"
-            : "Add a new collaboration opportunity"}
-        </p>
-      </div>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Header */}
+        <div className="space-y-1 border-b border-black/10 dark:border-white/10 pb-4">
+          <h2 className="text-lg font-semibold">
+            {initialData ? "Edit Collaboration" : "Create Collaboration"}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {initialData
+              ? "Update collaboration details"
+              : "Add a new collaboration opportunity"}
+          </p>
+        </div>
 
-      {/* Title */}
-      <div className="space-y-1.5">
-        <label className="text-sm font-medium">Title</label>
-        <input
-          name="title"
-          value={form.title}
-          onChange={handleChange}
-          required
-          className="w-full rounded-md border border-border px-3 py-2 text-sm
-          transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
-      </div>
-
-      {/* Description */}
-      <div className="space-y-1.5">
-        <label className="text-sm font-medium">Description</label>
-        <textarea
-          name="description"
-          value={form.description || ""}
-          onChange={handleChange}
-          rows={4}
-          className="w-full rounded-md border border-border px-3 py-2 text-sm
-          transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
-      </div>
-
-      {/* Budget + Timeline */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {/* Title */}
         <div className="space-y-1.5">
-          <label className="text-sm font-medium">Budget</label>
+          <label className="text-sm font-medium">Title</label>
           <input
-            type="number"
-            name="budget"
-            value={form.budget}
+            name="title"
+            value={form.title}
             onChange={handleChange}
             required
-            className="w-full rounded-md border border-border px-3 py-2 text-sm
-            transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="
+              w-full rounded-md
+              bg-transparent
+              border border-black/10 dark:border-white/10
+              px-3 py-2 text-sm
+              focus-visible:outline-none
+              focus-visible:ring-2
+              focus-visible:ring-primary
+            "
           />
         </div>
 
+        {/* Description */}
         <div className="space-y-1.5">
-          <label className="text-sm font-medium">Timeline</label>
-          <input
-            type="date"
-            name="timeline"
-            value={form.timeline}
+          <label className="text-sm font-medium">Description</label>
+          <textarea
+            name="description"
+            value={form.description || ""}
             onChange={handleChange}
-            required
-            className="w-full rounded-md border border-border px-3 py-2 text-sm
-            transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            rows={4}
+            className="
+              w-full rounded-md
+              bg-transparent
+              border border-black/10 dark:border-white/10
+              px-3 py-2 text-sm
+              resize-none
+              focus-visible:outline-none
+              focus-visible:ring-2
+              focus-visible:ring-primary
+            "
           />
         </div>
-      </div>
 
-      {/* Actions */}
-      <div className="flex justify-end gap-3 border-t border-border pt-4">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="rounded-md px-4 py-2 text-sm text-muted-foreground
-          hover:bg-muted transition"
-        >
-          Cancel
-        </button>
+        {/* Budget + Timeline */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Budget</label>
+            <input
+              type="number"
+              name="budget"
+              value={form.budget}
+              onChange={handleChange}
+              required
+              className="
+                w-full rounded-md
+                bg-transparent
+                border border-black/10 dark:border-white/10
+                px-3 py-2 text-sm
+                focus-visible:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-primary
+              "
+            />
+          </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-md bg-primary px-5 py-2 text-sm font-medium
-          text-primary-foreground hover:opacity-90 transition disabled:opacity-50"
-        >
-          {loading ? "Saving..." : initialData ? "Update" : "Create"}
-        </button>
-      </div>
-    </form>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Timeline</label>
+            <input
+              type="date"
+              name="timeline"
+              value={form.timeline}
+              onChange={handleChange}
+              required
+              className="
+                w-full rounded-md
+                bg-transparent
+                border border-black/10 dark:border-white/10
+                px-3 py-2 text-sm
+                focus-visible:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-primary
+              "
+            />
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex justify-end gap-3 border-t border-black/10 dark:border-white/10 pt-4">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="
+              px-4 py-2 text-sm
+              text-muted-foreground
+              hover:text-red-600
+              rounded-md
+              cursor-pointer
+            "
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="
+              px-5 py-2 text-sm font-medium
+              rounded-md
+              bg-primary
+              text-primary-foreground
+              disabled:opacity-50
+              cursor-pointer
+            "
+          >
+            {loading ? "Saving..." : initialData ? "Update" : "Create"}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }

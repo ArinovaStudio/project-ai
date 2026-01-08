@@ -11,6 +11,7 @@ import { InfoRow } from "@/components/ui/InfoRow";
 
 import { EditPersonalModal } from "@/components/EditPersonalModal";
 import { EditAddressModal } from "@/components/EditAddressModal";
+import { TruncatedTextWithPopover } from "@/components/ui/TruncatedTextWithPopover";
 
 export default function AccountDashboard() {
   const [user, setUser] = useState<User | null>(null);
@@ -28,7 +29,7 @@ export default function AccountDashboard() {
 
         const data = await res.json();
         if (!data?.user) throw new Error("User not found");
-console.log(data.user);
+        console.log(data.user);
 
         setUser(data.user);
       } catch {
@@ -58,6 +59,8 @@ console.log(data.user);
   }
 
   const address = user.AddressInfo?.[0] ?? null;
+  const subscription = user.subscription?.[0] ?? null;
+  const plan = subscription?.plan ?? null;
 
   return (
     <div className="min-h-screen bg-background p-8">
@@ -159,12 +162,12 @@ console.log(data.user);
                 </p>
               ) : (
                 <>
-                  <InfoRow label="Address Line 1" value={address.address1} />
-                  <InfoRow label="Address Line 2" value={address.address2} />
+                  <InfoRow label="Address Line 1" value={<TruncatedTextWithPopover text={address.Address1} />} />
+                  <InfoRow label="Address Line 2" value={<TruncatedTextWithPopover text={address.Address2} />} />
                   <InfoRow label="City" value={address.city} />
                   <InfoRow label="State" value={address.state} />
                   <InfoRow label="Country" value={address.country} />
-                  <InfoRow label="Postal Code" value={address.postalCode} />
+                  <InfoRow label="Postal Code" value={address.zipCode} />
                 </>
               )}
             </GlassCard>
@@ -186,13 +189,58 @@ console.log(data.user);
           </div>
         </div>
 
-        {/* Activity */}
+        {/* Features */}
         <GlassCard>
-          <SectionTitle title="Recent Activity" />
-          <p className="text-sm text-muted-foreground">
-            No recent activity available.
-          </p>
+          <SectionTitle title="Your Subscription Plan" />
+
+          {!subscription || !plan ? (
+            <p className="text-sm text-muted-foreground">
+              You are currently on the Free plan.
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {/* Plan header */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold">{plan.name}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Valid for {plan.duration} days
+                  </p>
+                </div>
+
+                <div className="text-right">
+                  <p className="text-xl font-bold">₹{plan.price}</p>
+                  <p className="text-xs text-muted-foreground">per plan</p>
+                </div>
+              </div>
+
+              {/* Features */}
+              <div className="border-t pt-4">
+                <p className="text-sm font-medium mb-2">
+                  What’s included
+                </p>
+
+                <ul className="space-y-2">
+                  {plan.features.map((feature, index) => (
+                    <li
+                      key={index}
+                      className="flex items-start gap-2 text-sm"
+                    >
+                      <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Status */}
+              <div className="pt-2 text-xs text-muted-foreground">
+                Status: {subscription.status}
+              </div>
+            </div>
+          )}
         </GlassCard>
+
       </div>
 
       <EditPersonalModal
