@@ -11,7 +11,6 @@ import { InfoRow } from "@/components/ui/InfoRow";
 
 import { EditPersonalModal } from "@/components/EditPersonalModal";
 import { EditAddressModal } from "@/components/EditAddressModal";
-import { TruncatedTextWithPopover } from "@/components/ui/TruncatedTextWithPopover";
 
 export default function AccountDashboard() {
   const [user, setUser] = useState<User | null>(null);
@@ -164,8 +163,8 @@ export default function AccountDashboard() {
                 </p>
               ) : (
                 <>
-                  <InfoRow label="Address Line 1" value={<TruncatedTextWithPopover text={address.Address1} />} />
-                  <InfoRow label="Address Line 2" value={<TruncatedTextWithPopover text={address.Address2} />} />
+                  <InfoRow label="Address Line 1" value={address.Address1}/>
+                  <InfoRow label="Address Line 2" value={address.Address2}/>
                   <InfoRow label="City" value={address.city} />
                   <InfoRow label="State" value={address.state} />
                   <InfoRow label="Country" value={address.country} />

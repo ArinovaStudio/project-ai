@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Country, State, City } from "country-state-city";
 import { toast } from "react-hot-toast";
-import { Country, State, City } from "country-state-city";
 import { ChevronDown } from "lucide-react";
 
 
@@ -25,14 +24,6 @@ export function EditAddressModal({
     postalCode: "",
   });
 
-
-  const [countryOpen, setCountryOpen] = useState(false);
-  const [countrySearch, setCountrySearch] = useState("");
-
-  const [stateSearch, setStateSearch] = useState("");
-  const [stateOpen, setStateOpen] = useState(false);
-  
-  const [cityOpen, setCityOpen] = useState(false);
   const [citySearch, setCitySearch] = useState("");
   const [showCities, setShowCities] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState("");
