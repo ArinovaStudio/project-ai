@@ -28,7 +28,7 @@ export default function AccountDashboard() {
 
         const data = await res.json();
         if (!data?.user) throw new Error("User not found");
-console.log(data.user);
+// console.log(data.user);
 
         setUser(data.user);
       } catch {
@@ -58,6 +58,7 @@ console.log(data.user);
   }
 
   const address = user.AddressInfo?.[0] ?? null;
+  console.log("\ndata = ",address)
 
   return (
     <div className="min-h-screen bg-background p-8">
@@ -159,12 +160,12 @@ console.log(data.user);
                 </p>
               ) : (
                 <>
-                  <InfoRow label="Address Line 1" value={address.address1} />
-                  <InfoRow label="Address Line 2" value={address.address2} />
+                  <InfoRow label="Address Line 1" value={address.Address1} />
+                  <InfoRow label="Address Line 2" value={address.Address2} />
                   <InfoRow label="City" value={address.city} />
                   <InfoRow label="State" value={address.state} />
                   <InfoRow label="Country" value={address.country} />
-                  <InfoRow label="Postal Code" value={address.postalCode} />
+                  <InfoRow label="Postal Code" value={address.zipCode} />
                 </>
               )}
             </GlassCard>

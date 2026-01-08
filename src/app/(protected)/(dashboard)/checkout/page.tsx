@@ -4,24 +4,26 @@ import { ArrowLeft } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useState, useEffect, useRef } from 'react';
 import { Country, State, City } from "country-state-city";
+import GradientBg from '@/components/GradientBg';
 // import { User } from "@/lib/type/type";
 
 
-const plans = {
-  starter: { name: "Starter", price: 0, period: "/month" },
-  professional: { name: "Professional", price: 29, period: "/month" },
-  enterprise: { name: "Enterprise", price: null, period: "Custom" },
-}
+// const plans = {
+//   starter: { name: "Starter", price: 0, period: "/month" },
+//   professional: { name: "Professional", price: 29, period: "/month" },
+//   enterprise: { name: "Enterprise", price: null, period: "Custom" },
+// }
 
 export default function BillingForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const planId = searchParams.get("plan") || "professional"
-  const plan = plans[planId as keyof typeof plans]
+  // const plan = plans[planId as keyof typeof plans]
 
   // const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [plan, setPlan] = useState<any>(null);
 
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedState, setSelectedState] = useState("");
@@ -67,8 +69,6 @@ export default function BillingForm() {
       document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-
-
   const [formData, setFormData] = useState({
     fullName: '',
     country: '',
@@ -92,23 +92,34 @@ export default function BillingForm() {
   };
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await fetch("/api/user/edit", { credentials: "include" });
-        if (!res.ok) throw new Error("Unauthorized");
+  if (!planId) return;
 
-        const data = await res.json();
-        if (!data?.user) throw new Error("User not found");
-        // console.log("data = ", data)
+  const fetchData = async () => {
+    try {
+      setLoading(true);
 
-        const info = data?.user?.AddressInfo[0]
-        // console.log("info = ", info)
+      const [userRes, planRes] = await Promise.all([
+        fetch("/api/user/edit", { credentials: "include" }),
+        fetch(`/api/subscriptionplan/${planId}`, {
+          method: "GET",
+          credentials: "include",
+        }),
+      ]);
 
-        if (!info) return;
+      if (!userRes.ok) throw new Error("Unauthorized");
+      if (!planRes.ok) throw new Error("Plan fetch failed");
 
+      const userData = await userRes.json();
+      const planData = await planRes.json();
+
+      // ---------- USER ----------
+      if (!userData?.user) throw new Error("User not found");
+
+      const info = userData.user.AddressInfo?.[0];
+      if (info) {
         setFormData((prev) => ({
           ...prev,
-          fullName: data?.user?.name || "",
+          fullName: userData.user.name || "",
           city: info.city || "",
           state: info.state || "",
           zipCode: info.zipCode || "",
@@ -117,31 +128,35 @@ export default function BillingForm() {
           address2: info.Address2 || "",
         }));
 
-        // for dropdowns
         const countryISO = Country.getAllCountries().find(
-          (c) => c.name.toLowerCase().trim() === info.country?.toLowerCase().trim()
+          (c) =>
+            c.name.toLowerCase().trim() ===
+            info.country?.toLowerCase().trim()
         )?.isoCode;
 
         const stateISO = State.getStatesOfCountry(countryISO || "").find(
-          (s) => s.name.toLowerCase().trim() === info.state?.toLowerCase().trim()
+          (s) =>
+            s.name.toLowerCase().trim() ===
+            info.state?.toLowerCase().trim()
         )?.isoCode;
 
-        // console.log("\nstate = ", stateISO, "\n country = ", countryISO)
         setSelectedCountry(countryISO || "");
         setSelectedState(stateISO || "");
-
-        // setUser(data.user);
-      } catch {
-        setError("Unable to load account data.");
-      } finally {
-        setLoading(false);
       }
-    };
 
-    fetchUser();
-  }, []);
+      // ---------- PLAN ----------
+      setPlan(planData.subscriptionPlan);
+    } catch (error) {
+      setError("Unable to load checkout data.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  if (loading) {
+  fetchData();
+}, [planId]);
+  
+  if (loading && !plan) {
     return (
       <div className="flex items-center justify-center min-h-screen text-muted-foreground">
         Loading billing page...
@@ -158,10 +173,11 @@ export default function BillingForm() {
   }
 
   const baseInputClass =
-    "w-full px-4 py-3 rounded-lg bg-background dark:bg-neutral-900/20 border border-neutral-800 text-foreground focus:outline-none flex items-center justify-between cursor-pointer";
+    "w-full px-4 py-3 rounded-lg bg-background/60 dark:bg-neutral-900/20 border border-neutral-800 text-foreground focus:outline-none flex items-center justify-between cursor-pointer";
 
   return (
     <div className="p-6 ">
+      <GradientBg />
       {/* Background decorative elements */}
       {/* <div className="absolute inset-0 overflow-hidden pointer-events-none">
         Light mode blobs
@@ -172,7 +188,7 @@ export default function BillingForm() {
         <div className="absolute top-20 left-10 w-72 h-72 bg-cyan-400 rounded-full blur-3xl opacity-30  hidden dark:block mix-blend-screen" />
         <div className="absolute bottom-20 right-40 w-96 h-96 bg-fuchsia-500 rounded-full blur-3xl opacity-30  hidden dark:block mix-blend-screen" />
       </div> */}
-      <div className="max-w-5xl mx-auto bg-background">
+      <div className="max-w-5xl mx-auto ">
         <button className="flex items-center gap-2 text-foreground/70 hover:text-foreground mb-2 sm:mt-5 text-sm cursor-pointer" onClick={() => router.back()}>
           <span><ArrowLeft size={15} /></span> Back
         </button>
@@ -195,7 +211,7 @@ export default function BillingForm() {
                   placeholder="First and last name"
                   value={formData.fullName}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg bg-background dark:bg-neutral-900/20 border border-neutral-800 placeholder-foreground/40 dark:placeholder-gray-500 focus:outline-none text-foreground"
+                  className="w-full px-4 py-3 rounded-lg bg-background/60 dark:bg-neutral-900/20 border border-neutral-800 placeholder-foreground/40 dark:placeholder-gray-500 focus:outline-none text-foreground"
                 />
               </div>
 
@@ -448,7 +464,7 @@ export default function BillingForm() {
                       setCityOpen(true);
                     }}
                     placeholder="Enter city"
-                    className="w-full px-4 py-3 rounded-lg bg-background dark:bg-neutral-900/20 
+                    className="w-full px-4 py-3 rounded-lg bg-background/60 dark:bg-neutral-900/20 
                border border-neutral-800 placeholder-foreground/40 
                focus:outline-none text-foreground disabled:cursor-not-allowed"
                   />
@@ -495,12 +511,12 @@ export default function BillingForm() {
                     Zip/postal code*
                   </label>
                   <input
-                    type="text"
+                    type='text'
                     name="zipCode"
                     value={formData.zipCode}
                     onChange={handleChange}
                     disabled={!formData.city}
-                    className="w-full px-4 py-3 rounded-lg bg-background dark:bg-neutral-900/20 border border-neutral-800 placeholder-foreground/40 focus:outline-none text-foreground disabled:cursor-not-allowed"
+                    className="w-full px-4 py-3 rounded-lg bg-background/60 dark:bg-neutral-900/20 border border-neutral-800 placeholder-foreground/40 focus:outline-none text-foreground disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -517,7 +533,7 @@ export default function BillingForm() {
                   placeholder="Street address"
                   value={formData.address1}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg bg-background dark:bg-neutral-900/20 border border-neutral-800 placeholder-foreground/40 dark:placeholder-gray-500 focus:outline-none text-foreground"
+                  className="w-full px-4 py-3 rounded-lg bg-background/60 dark:bg-neutral-900/20 border border-neutral-800 placeholder-foreground/40 dark:placeholder-gray-500 focus:outline-none text-foreground"
                 />
               </div>
 
@@ -532,14 +548,14 @@ export default function BillingForm() {
                   placeholder="Apt/Suite/Unit, etc"
                   value={formData.address2}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg bg-background dark:bg-neutral-900/20 border border-neutral-800 placeholder-foreground/40 dark:placeholder-gray-500 focus:outline-none text-foreground"
+                  className="w-full px-4 py-3 rounded-lg bg-background/60 dark:bg-neutral-900/20 border border-neutral-800 placeholder-foreground/40 dark:placeholder-gray-500 focus:outline-none text-foreground"
                 />
               </div>
             </div>
 
             {/* Right side - Summary */}
             <div className="">
-              <div className="bg-background dark:bg-neutral-900/20 rounded-lg p-6 shadow-[0_0_20px_rgba(0,0,0,0.2)] dark:shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+              <div className="bg-background/60 dark:bg-neutral-900/20 rounded-lg p-6 shadow-[0_0_11px_rgba(0,0,0,0.2)] dark:shadow-[0_0_7px_rgba(255,255,255,0.1)]">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-foreground/70 dark:text-gray-300 text-sm">Plan name</span>
                   <span className="text-foreground">{plan.name}</span>
