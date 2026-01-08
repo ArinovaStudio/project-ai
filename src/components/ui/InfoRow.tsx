@@ -1,18 +1,25 @@
+import { ReactNode } from "react";
+
 export function InfoRow({
   label,
   value,
-  mono = false,
+  mono,
 }: {
   label: string;
-  value?: string | null;
+  value?: ReactNode;
   mono?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between py-3 border-b border-border/40 last:border-none">
+    <div className="flex items-start justify-between gap-4 py-1">
       <span className="text-sm text-muted-foreground">{label}</span>
-      <span className={`text-sm font-medium ${mono ? "font-mono text-xs" : ""}`}>
-        {value || "—"}
-      </span>
+
+      <div
+        className={`text-sm text-right ${
+          mono ? "font-mono" : ""
+        }`}
+      >
+        {value ?? "—"}
+      </div>
     </div>
   );
 }

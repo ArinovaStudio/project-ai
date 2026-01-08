@@ -1,327 +1,222 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Pencil, Trash2, X } from "lucide-react"
-import { Button } from "../ui/button"
-import { Input } from "../ui/input"
+import { useEffect, useState } from "react";
+import { Pencil, Trash2, X } from "lucide-react";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import GradientBg from "@/components/GradientBg";
 
 type User = {
-    id: string
-    name: string | null
-    email: string
-    role: string
-    subscriptionTag: string
-}
+  id: string;
+  name: string | null;
+  email: string;
+  role: string;
+  subscriptionTag: string;
+};
 
 type EditFormData = {
-    name: string
-    email: string
-    role: string
-    subscriptionTag: string
-}
+  name: string;
+  email: string;
+  role: string;
+  subscriptionTag: string;
+};
 
 export default function UserPage() {
-    const [users, setUsers] = useState<User[]>([])
-    const [loading, setLoading] = useState(true)
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-    const [selectedUser, setSelectedUser] = useState<User | null>(null)
-    const [formData, setFormData] = useState<EditFormData>({
-        name: "",
-        email: "",
-        role: "",
-        subscriptionTag: ""
-    })
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-    useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const res = await fetch("/api/user", {
-                    credentials: "include",
-                })
+  const [roleFilter, setRoleFilter] = useState<"ADMIN" | "USER">("USER");
+  const [search, setSearch] = useState("");
 
-                if (!res.ok) {
-                    throw new Error("Failed to fetch users")
-                }
+  const [formData, setFormData] = useState<EditFormData>({
+    name: "",
+    email: "",
+    role: "",
+    subscriptionTag: "",
+  });
 
-                const data = await res.json()
-                setUsers(data.users)
-            } catch (err) {
-                console.error(err)
-            } finally {
-                setLoading(false)
-            }
-        }
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const res = await fetch("/api/user", { credentials: "include" });
+      const data = await res.json();
+      setUsers(data.users);
+      setLoading(false);
+    };
+    fetchUsers();
+  }, []);
 
-        fetchUsers()
-    }, [])
+  const filteredUsers = users.filter((u) => {
+    const roleMatch = u.role.toUpperCase() === roleFilter;
 
-    const handleEdit = (userId: string) => {
-        const user = users.find(u => u.id === userId)
-        if (user) {
-            setSelectedUser(user)
-            setFormData({
-                name: user.name || "",
-                email: user.email,
-                role: user.role,
-                subscriptionTag: user.subscriptionTag
-            })
-            setIsEditModalOpen(true)
-        }
-    }
+    const searchValue = search.toLowerCase();
+    const searchMatch =
+      u.name?.toLowerCase().includes(searchValue) ||
+      u.email.toLowerCase().includes(searchValue) ||
+      u.subscriptionTag.toLowerCase().includes(searchValue);
 
-    const handleDelete = (userId: string) => {
-        console.log("DELETE USER", userId)
-        // Add confirmation dialog logic here
-    }
+    return roleMatch && searchMatch;
+  });
 
-    const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        })
-    }
+  const handleEdit = (user: User) => {
+    setSelectedUser(user);
+    setFormData({
+      name: user.name || "",
+      email: user.email,
+      role: user.role,
+      subscriptionTag: user.subscriptionTag,
+    });
+    setIsEditModalOpen(true);
+  };
 
-    const handleFormSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        console.log("Updating user", selectedUser?.id, formData)
-        // Add API call to update user here
-        setIsEditModalOpen(false)
-    }
+  const handleFormChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-    const handleCloseModal = () => {
-        setIsEditModalOpen(false)
-        setSelectedUser(null)
-    }
+  if (loading) {
+    return <div className="p-6 text-muted-foreground">Loading users…</div>;
+  }
 
-    if (loading) {
-        return (
-            <div className="p-6 text-gray-600">
-                Loading users...
-            </div>
-        )
-    }
+  return (
+    <div className="relative min-h-screen">
+      <GradientBg />
 
-    return (
-        <div className="p-4 sm:p-6 space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between p-1">
-                <h1 className="text-2xl font-semibold text-gray-900">Users</h1>
-                <div className="text-sm text-gray-600">
-                    Total: {users.length}
-                </div>
-            </div>
-
-            {/* Desktop Table */}
-            <div className="hidden md:block overflow-x-auto bg-white rounded-lg shadow">
-                <table className="w-full">
-                    <thead className="bg-gray-50 border-b border-gray-200">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Name
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Email
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Role
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Subscription
-                            </th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Actions
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {users.map((user) => (
-                            <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm font-medium text-gray-900">
-                                        {user.name || "N/A"}
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-600">{user.email}</div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                        {user.role}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        {user.subscriptionTag}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <Button
-                                        onClick={() => handleEdit(user.id)}
-                                        className="text-blue-600 hover:text-blue-900 mr-4 inline-flex items-center"
-                                    >
-                                        <Pencil className="w-4 h-4" />
-                                    </Button>
-                                    <Button
-                                        onClick={() => handleDelete(user.id)}
-                                        className="text-red-600 hover:text-red-900 inline-flex items-center"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* Mobile Cards */}
-            <div className="md:hidden space-y-4">
-                {users.map((user) => (
-                    <div key={user.id} className="bg-white rounded-lg shadow p-4 space-y-3">
-                        <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                                <div className="text-sm font-medium text-gray-900">
-                                    {user.name || "N/A"}
-                                </div>
-                                <div className="text-sm text-gray-600 mt-1">{user.email}</div>
-                            </div>
-                            <div className="flex space-x-2">
-                                <Button
-                                    onClick={() => handleEdit(user.id)}
-                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                >
-                                    <Pencil className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                    onClick={() => handleDelete(user.id)}
-                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </Button>
-                            </div>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                            <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                {user.role}
-                            </span>
-                            <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                {user.subscriptionTag}
-                            </span>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {users.length === 0 && (
-                <div className="text-center py-12 text-gray-500">
-                    No users found
-                </div>
-            )}
-
-            {/* Edit Modal */}
-            {isEditModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-                        {/* Modal Header */}
-                        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                            <h2 className="text-xl font-semibold text-gray-900">Edit User</h2>
-                            <Button
-                                onClick={handleCloseModal}
-                                className="text-gray-400 hover:text-gray-600 transition-colors"
-                            >
-                                <X className="w-5 h-5" />
-                            </Button>
-                        </div>
-
-                        {/* Modal Body */}
-                        <form onSubmit={handleFormSubmit} className="p-6 space-y-4">
-                            <div>
-                                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Name
-                                </label>
-                                <Input
-                                    type="text"
-                                    id="name"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleFormChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="Enter name"
-                                />
-                            </div>
-
-                            <div>
-                                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Email
-                                </label>
-                                <Input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleFormChange}
-                                    required
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="Enter email"
-                                />
-                            </div>
-
-                            <div>
-                                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Role
-                                </label>
-                                <select
-                                    id="role"
-                                    name="role"
-                                    value={formData.role}
-                                    onChange={handleFormChange}
-                                    required
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                >
-                                    <option value="user">User</option>
-                                    <option value="admin">Admin</option>
-                                    <option value="moderator">Moderator</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label htmlFor="subscriptionTag" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Subscription
-                                </label>
-                                <select
-                                    id="subscriptionTag"
-                                    name="subscriptionTag"
-                                    value={formData.subscriptionTag}
-                                    onChange={handleFormChange}
-                                    required
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                >
-                                    <option value="free">Free</option>
-                                    <option value="basic">Basic</option>
-                                    <option value="premium">Premium</option>
-                                    <option value="enterprise">Enterprise</option>
-                                </select>
-                            </div>
-
-                            {/* Modal Footer */}
-                            <div className="flex justify-end space-x-3 pt-4">
-                                <Button
-                                    onClick={handleCloseModal}
-                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-                                >
-                                    Save Changes
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+      <div className="relative z-10 space-y-6 pb-12">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 pt-6">
+          <h1 className="text-2xl font-bold">Users</h1>
+          <span className="text-sm text-muted-foreground">
+            Total: {filteredUsers.length}
+          </span>
         </div>
-    )
+
+        {/* Search + Filters */}
+        <div className="flex items-center gap-8 px-6">
+          <div className="w-64">
+            <Input
+              placeholder="Search name, email, subscription…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="
+                bg-white/60 dark:bg-white/5
+                backdrop-blur
+                border-black/10 dark:border-white/10
+              "
+            />
+          </div>
+
+          <div className="flex gap-2">
+            {["ADMIN", "USER"].map((role) => (
+              <button
+                key={role}
+                onClick={() => setRoleFilter(role as any)}
+                className={`px-4 py-1.5 text-sm rounded-full border transition
+                  ${
+                    roleFilter === role
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-white/60 dark:bg-white/5 backdrop-blur border-black/10 dark:border-white/10"
+                  }
+                `}
+              >
+                {role}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Desktop Table */}
+        <div
+          className="
+            hidden md:block mx-6 overflow-hidden
+            rounded-xl border border-black/10 dark:border-white/10
+            bg-[linear-gradient(135deg,rgba(255,255,255,0.85),rgba(255,255,255,0.6))]
+            dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))]
+            backdrop-blur-xl
+            shadow-[0_8px_32px_rgba(0,0,0,0.18)]
+          "
+        >
+          <table className="w-full text-sm">
+            <thead className="border-b border-black/10 dark:border-white/10">
+              <tr className="text-left text-muted-foreground">
+                <th className="px-6 py-3">Name</th>
+                <th className="px-6 py-3">Email</th>
+                <th className="px-6 py-3">Role</th>
+                <th className="px-6 py-3">Subscription</th>
+                <th className="px-6 py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredUsers.map((u) => (
+                <tr
+                  key={u.id}
+                  className="border-b border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/5"
+                >
+                  <td className="px-6 py-4 font-medium">{u.name || "N/A"}</td>
+                  <td className="px-6 py-4 text-muted-foreground">{u.email}</td>
+                  <td className="px-6 py-4">{u.role}</td>
+                  <td className="px-6 py-4">{u.subscriptionTag}</td>
+                  <td className="px-6 py-4 text-right">
+                    <Button variant="ghost" size="icon" onClick={() => handleEdit(u)}>
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon">
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Edit Modal */}
+        {isEditModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-md">
+            <div
+              className="
+                w-full max-w-md rounded-xl
+                border border-black/10 dark:border-white/10
+                bg-[linear-gradient(135deg,rgba(255,255,255,0.95),rgba(255,255,255,0.7))]
+                dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.1),rgba(255,255,255,0.04))]
+                backdrop-blur-xl
+                p-6
+              "
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold">Edit User</h2>
+                <button onClick={() => setIsEditModalOpen(false)}>
+                  <X />
+                </button>
+              </div>
+
+              <form className="space-y-4">
+                <Input
+                  name="name"
+                  value={formData.name}
+                  onChange={handleFormChange}
+                  placeholder="Name"
+                />
+                <Input
+                  name="email"
+                  value={formData.email}
+                  onChange={handleFormChange}
+                  placeholder="Email"
+                />
+                <div className="flex justify-end gap-2">
+                  <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button>Save</Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
