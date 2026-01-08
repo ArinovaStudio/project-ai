@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { Country, State, City } from "country-state-city";
 import { toast } from "react-hot-toast";
 import { Country, State, City } from "country-state-city";
 import { ChevronDown } from "lucide-react";
@@ -34,6 +35,15 @@ export function EditAddressModal({
   const [cityOpen, setCityOpen] = useState(false);
   const [citySearch, setCitySearch] = useState("");
   const [showCities, setShowCities] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedState, setSelectedState] = useState("");
+
+  const [countrySearch, setCountrySearch] = useState("");
+  const [stateSearch, setStateSearch] = useState("");
+
+  const [countryOpen, setCountryOpen] = useState(false);
+  const [stateOpen, setStateOpen] = useState(false);
+  const [cityOpen, setCityOpen] = useState(false);
 
   const countryRef = useRef<HTMLDivElement | null>(null);
   const stateRef = useRef<HTMLDivElement | null>(null);
@@ -71,19 +81,50 @@ export function EditAddressModal({
 
   const isEdit = Boolean(address);
 
-  // 🔑 RESET FORM WHEN OPEN
+  /* RESET FORM ON OPEN */
   useEffect(() => {
-    if (open) {
-      setForm({
-        address1: address?.Address1 ?? "",
-        address2: address?.Address2 ?? "",
-        city: address?.city ?? "",
-        state: address?.state ?? "",
-        country: address?.country ?? "",
-        postalCode: address?.zipCode ?? "",
-      });
-    }
+    if (!open) return;
+
+    setForm({
+      address1: address?.Address1 ?? "",
+      address2: address?.Address2 ?? "",
+      city: address?.city ?? "",
+      state: address?.state ?? "",
+      country: address?.country ?? "",
+      postalCode: address?.zipCode ?? "",
+    });
+
+    const countryISO = Country.getAllCountries().find(
+      (c) => c.name.toLowerCase() === address?.country?.toLowerCase()
+    )?.isoCode;
+
+    const stateISO = State.getStatesOfCountry(countryISO || "").find(
+      (s) => s.name.toLowerCase() === address?.state?.toLowerCase()
+    )?.isoCode;
+
+    setSelectedCountry(countryISO || "");
+    setSelectedState(stateISO || "");
   }, [open, address]);
+
+  /* CLICK OUTSIDE HANDLER */
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const t = e.target as Node;
+      if (
+        countryRef.current?.contains(t) ||
+        stateRef.current?.contains(t) ||
+        cityRef.current?.contains(t)
+      ) {
+        return;
+      }
+      setCountryOpen(false);
+      setStateOpen(false);
+      setCityOpen(false);
+    };
+
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   if (!open) return null;
 
@@ -92,8 +133,14 @@ export function EditAddressModal({
       Address1: form.address1,
       Address2: form.address2 || null,
       city: form.city,
-      state: form.state,
-      country: form.country,
+      state:
+        State.getStatesOfCountry(selectedCountry).find(
+          (s) => s.isoCode === selectedState
+        )?.name || "",
+      country:
+        Country.getAllCountries().find(
+          (c) => c.isoCode === selectedCountry
+        )?.name || "",
       zipCode: form.postalCode,
     };
 
@@ -113,11 +160,14 @@ export function EditAddressModal({
 
       toast.success(isEdit ? "Address updated" : "Address added");
       onClose();
-      location.reload(); // keep your current flow
+      location.reload();
     } catch {
       toast.error("Something went wrong");
     }
   };
+
+  const baseInput =
+    "w-full px-4 py-2 rounded-xl bg-white/80 dark:bg-neutral-800/60 border border-black/10 dark:border-white/15 text-sm outline-none";
 
   return (
     <div
@@ -132,11 +182,8 @@ export function EditAddressModal({
           bg-white/70 dark:bg-neutral-900/60
           backdrop-blur-xl
           shadow-[0_20px_60px_rgba(0,0,0,0.4)]
-          dark:shadow-[0_20px_60px_rgba(0,0,0,0.8)]
         "
       >
-        <div className="absolute inset-0 rounded-3xl ring-1 ring-white/10 pointer-events-none" />
-
         {/* HEADER */}
         <div className="px-6 pt-6 pb-4 border-b border-white/10">
           <h2 className="text-xl font-semibold">
@@ -335,13 +382,13 @@ export function EditAddressModal({
         <div className="px-6 py-4 border-t border-white/10 flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="cursor-pointer rounded-xl px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-foreground"
+            className="rounded-xl px-4 py-2 text-sm"
           >
             Cancel
           </button>
           <button
             onClick={save}
-            className="cursor-pointer rounded-xl bg-linear-to-r from-blue-500 to-cyan-500 px-5 py-2 text-sm font-medium text-white shadow-lg"
+            className="rounded-xl bg-linear-to-r from-blue-500 to-cyan-500 px-5 py-2 text-sm text-white"
           >
             Save Changes
           </button>

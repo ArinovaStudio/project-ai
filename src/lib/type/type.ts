@@ -8,6 +8,7 @@ export type AddressInfo = {
   zipCode: string | null;
   createdAt: string;
   updatedAt: string;
+  zipCode: string | null;
 };
 
 export type User = {
@@ -29,9 +30,38 @@ export type User = {
   updatedAt: string;
 
   // Relations
-  subscription: unknown[];     // or Subscription[] if typed
-  AddressInfo: AddressInfo[];   // IMPORTANT: array, not object
+  subscription: Subscription[];
+  AddressInfo: AddressInfo[];
 };
+
+
+export type SubscriptionPlan = {
+  id: string;
+  name: string;
+  price: number;
+  features: string[];
+  duration: number;
+
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type Subscription = {
+  id: string;
+  userId: string;
+  planId: string;
+
+  status: "ACTIVE" | "EXPIRED" | "CANCELLED"; // match enum
+  startDate: string;
+  endDate: string;
+
+  createdAt: string;
+  updatedAt: string;
+
+  // Relations
+  plan: SubscriptionPlan;
+};
+
 
 export type Message = {
   id: string

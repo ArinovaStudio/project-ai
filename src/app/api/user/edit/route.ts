@@ -26,7 +26,9 @@ export async function GET() {
         orderBy: { createdAt: "desc" },
         take: 10,
       },
-      subscription: true,
+      subscription: {
+        include: { plan: true },
+      },
       AddressInfo: true,
     },
   });
