@@ -11,8 +11,11 @@ import { InfoRow } from "@/components/ui/InfoRow";
 
 import { EditPersonalModal } from "@/components/EditPersonalModal";
 import { EditAddressModal } from "@/components/EditAddressModal";
+import { useRouter } from "next/navigation";
 
 export default function AccountDashboard() {
+  const router = useRouter()
+
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +62,7 @@ export default function AccountDashboard() {
   }
 
   const address = user.AddressInfo?.[0] ?? null;
-//   console.log("\ndata = ",address)
+  //   console.log("\ndata = ",address)
   const subscription = user.subscription?.[0] ?? null;
   const plan = subscription?.plan ?? null;
 
@@ -128,6 +131,78 @@ export default function AccountDashboard() {
                 </div>
               </div>
             </GlassCard>
+
+            <GlassCard>
+              <SectionTitle title="Your Subscription Plan" />
+
+              {!subscription || !plan ? (
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    You are currently on the <strong>Free</strong> plan.
+                  </p>
+
+                  <div className="rounded-xl border border-dashed border-primary/40 bg-primary/5 p-4">
+                    <p className="text-sm font-medium mb-2">
+                      Upgrade to unlock premium features
+                    </p>
+
+                    <ul className="space-y-2 text-sm text-muted-foreground">
+                      <li>• Access advanced features</li>
+                      <li>• Higher usage limits</li>
+                      <li>• Priority support</li>
+                    </ul>
+                  </div>
+
+                  <button
+                    onClick={() => router.push("/subscriptions")}
+                    className="inline-flex items-center justify-center rounded-xl bg-linear-to-r from-blue-500 to-cyan-500 px-5 py-2 text-sm font-medium text-white cursor-pointer"
+                  >
+                    Upgrade Plan
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* Plan header */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold">{plan.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Valid for {plan.duration} days
+                      </p>
+                    </div>
+
+                    <div className="text-right">
+                      <p className="text-xl font-bold">₹{plan.price}</p>
+                      <p className="text-xs text-muted-foreground">per plan</p>
+                    </div>
+                  </div>
+
+                  {/* Features */}
+                  <div className="border-t pt-4">
+                    <p className="text-sm font-medium mb-2">
+                      What’s included
+                    </p>
+
+                    <ul className="space-y-2">
+                      {plan.features.map((feature, index) => (
+                        <li
+                          key={index}
+                          className="flex items-start gap-2 text-sm"
+                        >
+                          <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Status */}
+                  <div className="pt-2 text-xs text-muted-foreground">
+                    Status: {subscription.status}
+                  </div>
+                </div>
+              )}
+            </GlassCard>
           </div>
 
           {/* RIGHT */}
@@ -163,8 +238,8 @@ export default function AccountDashboard() {
                 </p>
               ) : (
                 <>
-                  <InfoRow label="Address Line 1" value={address.Address1}/>
-                  <InfoRow label="Address Line 2" value={address.Address2}/>
+                  <InfoRow label="Address Line 1" value={address.Address1} />
+                  <InfoRow label="Address Line 2" value={address.Address2} />
                   <InfoRow label="City" value={address.city} />
                   <InfoRow label="State" value={address.state} />
                   <InfoRow label="Country" value={address.country} />
@@ -191,56 +266,33 @@ export default function AccountDashboard() {
         </div>
 
         {/* Features */}
-        <GlassCard>
-          <SectionTitle title="Your Subscription Plan" />
-
-          {!subscription || !plan ? (
+        {/* {user.subscriptionTag === "FREE" && <GlassCard>
+           <SectionTitle title="Your Subscription Plan" /> 
+          <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              You are currently on the Free plan.
+              You are currently on the <strong>Free</strong> plan.
             </p>
-          ) : (
-            <div className="space-y-4">
-              {/* Plan header */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold">{plan.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Valid for {plan.duration} days
-                  </p>
-                </div>
 
-                <div className="text-right">
-                  <p className="text-xl font-bold">₹{plan.price}</p>
-                  <p className="text-xs text-muted-foreground">per plan</p>
-                </div>
-              </div>
+            <div className="rounded-xl border border-dashed border-primary/40 bg-primary/5 p-4">
+              <p className="text-sm font-medium mb-2">
+                Upgrade to unlock premium features
+              </p>
 
-              {/* Features */}
-              <div className="border-t pt-4">
-                <p className="text-sm font-medium mb-2">
-                  What’s included
-                </p>
-
-                <ul className="space-y-2">
-                  {plan.features.map((feature, index) => (
-                    <li
-                      key={index}
-                      className="flex items-start gap-2 text-sm"
-                    >
-                      <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Status */}
-              <div className="pt-2 text-xs text-muted-foreground">
-                Status: {subscription.status}
-              </div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>• Access advanced features</li>
+                <li>• Higher usage limits</li>
+                <li>• Priority support</li>
+              </ul>
             </div>
-          )}
-        </GlassCard>
+
+            <button
+              onClick={() => router.push("/subscriptions")}
+              className="inline-flex items-center justify-center rounded-xl bg-linear-to-r from-blue-500 to-cyan-500 px-5 py-2 text-sm font-medium text-white cursor-pointer"
+            >
+              Upgrade Plan
+            </button>
+          </div>
+        </GlassCard>} */}
 
       </div>
 
