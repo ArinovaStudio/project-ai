@@ -213,7 +213,7 @@ export function AppSidebar() {
             selectChat(0)
           }}
           className="
-    h-8
+    h-10
     w-full
     flex items-center justify-center gap-2
 
@@ -228,10 +228,8 @@ export function AppSidebar() {
     via-[#3a2c6f]
     to-[#7b4bff]
 
-    text-white font-medium
-    shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08),0_4px_12px_rgba(0,0,0,0.35)]
+    backdrop-blur-lg border border-white/15 text-white font-semibold shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08),0_8px_20px_rgba(0,0,0,0.45)] hover:scale-[1.02] transition-all duration-200
 
-    transition-all duration-200
   "
         >
           <Plus
@@ -251,7 +249,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         <ScrollArea className="h-full px-2">
-          <SidebarMenu>
+          {/* <SidebarMenu>
             {menuItems
               .filter(item => item.roles.includes(session?.user?.role as Role))
               .map(({ label, href, icon: Icon }) => (
@@ -266,7 +264,7 @@ export function AppSidebar() {
                   </Link>
                 </SidebarMenuItem>
               ))}
-          </SidebarMenu>
+          </SidebarMenu> */}
 
           <div className="mt-4 px-2 text-xs font-semibold text-muted-foreground group-data-[state=collapsed]:hidden">
             Chat History
@@ -274,46 +272,46 @@ export function AppSidebar() {
 
           <SidebarMenu className="mt-1 group-data-[state=collapsed]:hidden">
             {chatHistory.map((chat) => (
-                <SidebarMenuItem key={chat.id} className="group/chat">
-                  <SidebarMenuButton
-                    isActive={selectedChatId === chat.id}
-                    onClick={() => {
-                      handleSelectChat(chat.id);
-                    }}
-                    className="py-6 cursor-pointer"
-                  >
-                    <div className="flex items-center justify-between w-[95%]">
-                      <div className="flex flex-col text-left group-data-[state=collapsed]:hidden w-[75%]">
-                        <span className="truncate text-sm font-medium">
-                          {chat.title}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {formatChatDate(chat.date)}
-                        </span>
-                      </div>
-
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <div
-                            onClick={(e) => e.stopPropagation()}
-                            className="opacity-100 md:opacity-0 md:group-hover/chat:opacity-100 transition p-1 rounded-md hover:bg-muted"
-                          >
-                            <MoreHorizontal className="w-4 h-4 text-muted-foreground cursor-pointer" />
-                          </div>
-                        </DropdownMenuTrigger>
-
-
-                        <DropdownMenuContent align="end" className="w-32">
-                          <DropdownMenuItem className="text-red-600 focus:text-red-600">
-                            <Trash className="w-4 h-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+              <SidebarMenuItem key={chat.id} className="group/chat">
+                <SidebarMenuButton
+                  isActive={selectedChatId === chat.id}
+                  onClick={() => {
+                    handleSelectChat(chat.id);
+                  }}
+                  className="py-6 cursor-pointer"
+                >
+                  <div className="flex items-center justify-between w-[95%]">
+                    <div className="flex flex-col text-left group-data-[state=collapsed]:hidden w-[75%]">
+                      <span className="truncate text-sm font-medium">
+                        {chat.title}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {formatChatDate(chat.date)}
+                      </span>
                     </div>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <div
+                          onClick={(e) => e.stopPropagation()}
+                          className="opacity-100 md:opacity-0 md:group-hover/chat:opacity-100 transition p-1 rounded-md hover:bg-muted"
+                        >
+                          <MoreHorizontal className="w-4 h-4 text-muted-foreground cursor-pointer" />
+                        </div>
+                      </DropdownMenuTrigger>
+
+
+                      <DropdownMenuContent align="end" className="w-32">
+                        <DropdownMenuItem className="text-red-600 focus:text-red-600">
+                          <Trash className="w-4 h-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
           </SidebarMenu>
         </ScrollArea>
       </SidebarContent>
@@ -410,12 +408,15 @@ export function AppSidebar() {
                       <div
                         onClick={(e) => {
                           e.stopPropagation()
-                          router.push("/subscriptions")
+                          if (user?.subscriptionTag === "FREE") {
+                            router.push("/subscriptions");
+                          }
                         }}
                         className="bg-[#CF5056] px-2 py-0.5 rounded-md text-white text-xs font-semibold cursor-pointer"
                       >
                         {user?.subscriptionTag}
                       </div>
+
                     </div>
 
                     <p className="text-xs text-muted-foreground truncate">
@@ -431,13 +432,27 @@ export function AppSidebar() {
           {/* DIVIDER — hidden when collapsed */}
           <div className="w-full border-t border-border my-2 group-data-[state=collapsed]:hidden" />
 
+          {user?.subscriptionTag === "FREE" && <> <div className="text-sm text-muted-foreground group-data-[state=collapsed]:hidden py-1">
+            <button
+              onClick={() => {
+                router.push("/subscriptions");
+              }}
+              className="flex items-center gap-1 hover:text-gray-200 transition-colors cursor-pointer"
+            >
+              <Crown size={16} />Upgrade to Pro
+            </button>
+
+          </div>
+
+            <div className="w-full border-t border-border mt-2 group-data-[state=collapsed]:hidden" /></>}
+
           {/* EXTRA CONTENT — hidden when collapsed */}
-          <div className="flex items-center justify-between text-sm text-muted-foreground group-data-[state=collapsed]:hidden">
+          <div className="flex items-center justify-between text-sm text-muted-foreground group-data-[state=collapsed]:hidden ">
             <button
               onClick={handleLogout}
               className="flex items-center gap-1 hover:text-red-600 transition-colors cursor-pointer"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut size={16} />
               Logout
             </button>
 
@@ -447,7 +462,6 @@ export function AppSidebar() {
 
           </div>
         </div>
-
 
       </SidebarFooter>
     </Sidebar>

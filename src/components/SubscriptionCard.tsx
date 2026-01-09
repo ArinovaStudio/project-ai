@@ -11,7 +11,7 @@ interface SubscriptionCardProps {
   duration: string
   description: string
   features: string[]
-  highlighted: boolean
+  isRecommended: boolean
   isSelected: boolean
   onSelect: () => void
 }
@@ -22,7 +22,7 @@ export default function SubscriptionCard({
   duration,
   description,
   features,
-  highlighted,
+  isRecommended,
   isSelected,
   onSelect,
 }: SubscriptionCardProps) {
@@ -30,7 +30,7 @@ export default function SubscriptionCard({
     <div
       className={cn(
         "relative rounded-2xl border transition-all duration-300 overflow-hidden flex flex-col backdrop-blur-xl bg-white/10 dark:bg-black/20 ",
-        highlighted
+        isRecommended
           ? "border-primary/40 shadow-[0_0_45px_rgba(59,130,246,0.35)] ring-1 ring-primary/40 md:scale-105 hover:scale-[1.1]"
           : "border-white/20 dark:border-white/10 shadow-sm hover:scale-[1.02]",
       )}
@@ -39,7 +39,7 @@ export default function SubscriptionCard({
       <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-white/20 via-white/5 to-transparent dark:from-white/10 dark:via-transparent" />
 
       {/* Recommended Badge */}
-      {highlighted && (
+      {isRecommended && (
         <>
           {/* Glow */}
           <div className="absolute -top-6 -right-6 w-28 h-28 bg-blue-500/30 blur-3xl rounded-full" />
@@ -73,7 +73,7 @@ export default function SubscriptionCard({
                 <span className="text-5xl font-bold text-foreground">
                   ${price}
                 </span>
-               {price!==0 && <span className="text-muted-foreground">
+                {price !== 0 && <span className="text-muted-foreground">
                   {duration} days
                 </span>}
               </>
@@ -99,15 +99,15 @@ export default function SubscriptionCard({
 
         {/* CTA */}
         <Button
-          onClick={onSelect}
+          onClick={price !== 0 ? onSelect : undefined}
           className={cn(
             "w-full h-11 font-semibold transition-all duration-200 cursor-pointer backdrop-blur",
-            highlighted
+            isRecommended
               ? "bg-blue-600 text-white shadow-lg shadow-blue-600/40 hover:bg-blue-700 hover:scale-[1.02]"
               : "bg-gray-400/30 text-foreground hover:bg-gray-400/40 hover:scale-[1.02]",
           )}
         >
-          Buy Now
+          {price === 0 ? "Free" : "Buy Now"}
         </Button>
       </div>
     </div>

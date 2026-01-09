@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
         );
 
     } catch (error) {
-        // console.error("Error fetching subscription plans:", error);
+        console.error("Error fetching subscription plans:", error);
 
         return NextResponse.json(
             { error: "Failed to fetch subscription plans" },
@@ -47,26 +47,58 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { userId, planId, startDate, endDate } = body;
+        const { userId, planId } = body;
 
-        if (!userId || !planId || !startDate || !endDate) {
+        if (!userId || !planId) {
             return NextResponse.json(
-                { error: "userId, planId, startDate, and endDate are required" },
+                { error: "userId, planId are required" },
                 { status: 400 }
             );
         }
 
-        const subscription = await prisma.subscription.create({
-            data: {
-                userId, // 👈 comes from body
-                planId,
-                startDate: new Date(startDate),
-                endDate: new Date(endDate),
-            },
+        const result = await prisma.$transaction(async (tx) => {
+            //  Fetch plan duration
+            const plan = await tx.subscriptionPlan.findUnique({
+                where: { id: planId },
+                select: { duration: true }
+            });
+
+            if (!plan) {
+                throw new Error("Subscription plan not found");
+            }
+
+            //  Start date = today
+            const startDate = new Date();
+
+            //  End date = startDate + duration (days)
+            const endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + plan.duration);
+
+            //  Create subscription
+            const subscription = await tx.subscription.create({
+                data: {
+                    userId,
+                    planId,
+                    startDate,
+                    endDate
+                }
+            });
+
+            //  Update user subscription tag
+            await tx.user.update({
+                where: { id: userId },
+                data: {
+                    subscriptionTag: "PAID"
+                }
+            });
+
+            return subscription;
         });
 
+
+
         return NextResponse.json(
-            { subscription },
+            { subscription: result },
             { status: 201 }
         );
 
@@ -79,7 +111,6 @@ export async function POST(req: NextRequest) {
         );
     }
 }
-
 
 export async function DELETE(req: NextRequest) {
     try {

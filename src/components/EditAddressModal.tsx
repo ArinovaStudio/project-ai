@@ -97,6 +97,10 @@ export function EditAddressModal({
     setSelectedState(stateISO || "");
   }, [open, address]);
 
+  // useEffect(() => {
+  //   console.log("form = ", form)
+  // }, [form])
+
   /* CLICK OUTSIDE HANDLER */
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -134,6 +138,8 @@ export function EditAddressModal({
         )?.name || "",
       zipCode: form.postalCode,
     };
+
+    // console.log("payload = ", payload)
 
     try {
       const res = await fetch("/api/user/address", {
@@ -226,7 +232,9 @@ export function EditAddressModal({
               className="w-full flex justify-between items-center rounded-xl border border-black/10 dark:border-white/15 bg-white/80 dark:bg-neutral-800/60 px-4 py-2 text-sm"
             >
               <span>
-                {form.country || "Select country"}
+                {selectedCountry
+                  ? Country.getAllCountries().find(c => c.isoCode === selectedCountry)?.name
+                  : "Select country"}
               </span>
               <span
                 className={`transition-transform ${countryOpen ? "rotate-180" : ""
@@ -254,7 +262,8 @@ export function EditAddressModal({
                       <li
                         key={c.isoCode}
                         onClick={() => {
-                          setForm({ ...form, country: c.isoCode, state: "", city: "" });
+                          setSelectedCountry(c.isoCode)
+                          setForm({ ...form, country: c.name, state: "", city: "" });
                           setCountryOpen(false);
                           setCountrySearch("");
                         }}
@@ -275,12 +284,14 @@ export function EditAddressModal({
 
             <button
               type="button"
-              disabled={!form.country}
+              disabled={!selectedCountry}
               onClick={() => setStateOpen((p) => !p)}
               className="w-full flex justify-between items-center rounded-xl border border-black/10 dark:border-white/15 bg-white/80 dark:bg-neutral-800/60 px-4 py-2 text-sm disabled:cursor-not-allowed"
             >
               <span>
-                {form.state || "Select state"}
+                {selectedState
+                  ? State.getStatesOfCountry(selectedCountry).find(s => s.isoCode === selectedState)?.name
+                  : "Select state/region"}
               </span>
               <span
                 className={`transition-transform ${stateOpen ? "rotate-180" : ""
@@ -300,7 +311,7 @@ export function EditAddressModal({
                 />
 
                 <ul className="max-h-40 overflow-auto">
-                  {State.getStatesOfCountry(form.country)
+                  {State.getStatesOfCountry(selectedCountry)
                     .filter((s) =>
                       s.name.toLowerCase().includes(stateSearch.toLowerCase())
                     )
@@ -308,6 +319,7 @@ export function EditAddressModal({
                       <li
                         key={s.isoCode}
                         onMouseDown={() => {
+                          setSelectedState(s.isoCode)
                           setForm({ ...form, state: s.name, city: "" });
                           setStateOpen(false);
                           setStateSearch("");
@@ -344,10 +356,8 @@ export function EditAddressModal({
             {showCities && citySearch && (
               <ul className="absolute z-30 mt-1 w-full max-h-40 overflow-auto rounded-xl border border-white/15 bg-background shadow-xl">
                 {City.getCitiesOfState(
-                  form.country,
-                  State.getStatesOfCountry(form.country).find(
-                    (s) => s.name === form.state
-                  )?.isoCode || ""
+                  selectedCountry,
+                  selectedState
                 )
                   .filter((c) =>
                     c.name.toLowerCase().includes(citySearch.toLowerCase())

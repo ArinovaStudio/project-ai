@@ -59,7 +59,7 @@ interface PlanUI {
   duration: string
   description: string
   features: string[]
-  highlighted: boolean
+  isRecommended: boolean
   isSelected: boolean
   onSelect: () => void
 }
@@ -110,6 +110,14 @@ export default function SubscriptionsPage() {
     return (
       <div className="flex items-center justify-center min-h-screen text-muted-foreground">
         {error ?? "Not authenticated"}
+      </div>
+    );
+  }
+
+  if (plans.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-muted-foreground">
+        No Data
       </div>
     );
   }
